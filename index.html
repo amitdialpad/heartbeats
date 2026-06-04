@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Heartbeats — House of Ayre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Gloock&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #1a1813;            /* warm-dark, tinted (not pure black/gray) */
+    --bg-raise: #221f18;
+    --ink: #ece6d9;
+    --ink-dim: #c2bba9;
+    --ink-faint: #9b9582;     /* meets AA on --bg */
+    --rule: #34302651;
+    --rule-solid: #353026;
+    --accent: #e2814e;        /* ember */
+    --green: #9fbb74;
+    --amber: #e6ae57;
+    --red: #e87a54;
+    --t-meta: 12px;
+    --t-body: 18px;
+    --t-name: 24px;           /* 1.33x body */
+    --t-display: clamp(52px, 11vw, 76px);
+    --max: 660px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Newsreader", Georgia, serif;
+    font-size: var(--t-body); line-height: 1.62;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  ::selection { background: var(--accent); color: var(--bg); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 30px 26px 130px; }
+
+  /* nav (a real breadcrumb link, not a tracked-caps eyebrow) */
+  nav.top {
+    display: flex; align-items: center; gap: 9px;
+    font-family: "Newsreader", serif; font-size: 18px; font-style: italic;
+    color: var(--ink-faint); margin-bottom: 64px;
+  }
+  nav.top a { color: var(--ink-dim); font-style: normal; }
+  nav.top .sep { opacity: .5; }
+  nav.top .here { color: var(--ink); font-style: normal; }
+
+  /* masthead */
+  h1 {
+    font-family: "Gloock", "Newsreader", serif; font-weight: 400;
+    font-size: var(--t-display); line-height: .98; margin: 0;
+    letter-spacing: -.01em;
+  }
+  h1 em { color: var(--accent); font-style: normal; }
+  .lede {
+    margin: 22px 0 0; max-width: 46ch; color: var(--ink-dim);
+    font-size: 18px; font-style: italic; line-height: 1.5;
+  }
+
+  /* roster — one quiet raised surface, nothing nested inside it */
+  .roster {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 18px;
+    margin: 56px 0 44px; padding: 18px 4px;
+    border-top: 1px solid var(--rule-solid); border-bottom: 1px solid var(--rule-solid);
+  }
+  .roster .lbl {
+    font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-faint);
+  }
+  .person { display: inline-flex; align-items: center; gap: 9px; font-size: 18px; }
+  .person .dot { width: 8px; height: 8px; border-radius: 50%; background: #4d4838; }
+  .person.in .dot { background: var(--green); box-shadow: 0 0 0 3px #9fbb7422; }
+  .person.out { color: var(--ink-faint); }
+  .person .miss { font-family: "JetBrains Mono", monospace; font-size: 12px; }
+
+  /* filters */
+  .filters { display: flex; flex-wrap: wrap; gap: 22px; margin-bottom: 8px; }
+  .filter {
+    font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: .04em;
+    background: none; border: none; padding: 4px 0; cursor: pointer; color: var(--ink-faint);
+    border-bottom: 2px solid transparent; transition: color .15s ease, border-color .15s ease;
+  }
+  .filter:hover { color: var(--ink-dim); }
+  .filter.active { color: var(--ink); border-bottom-color: var(--accent); }
+
+  /* feed — separated by rules + space, not boxed cards */
+  .beat { padding: 40px 0 6px; border-top: 1px solid var(--rule); animation: rise .55s cubic-bezier(.22,.61,.36,1) both; }
+  .beat:first-of-type { border-top: none; }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  .beat-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 20px; }
+  .author { font-family: "Gloock", serif; font-weight: 400; font-size: var(--t-name); line-height: 1; }
+  .when { font-family: "JetBrains Mono", monospace; font-size: var(--t-meta); color: var(--ink-faint); }
+  .status {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 7px;
+    font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+  }
+  .status .sdot { width: 8px; height: 8px; border-radius: 50%; }
+  .status.green { color: var(--green); }   .status.green .sdot { background: var(--green); }
+  .status.concern { color: var(--amber); } .status.concern .sdot { background: var(--amber); }
+  .status.red { color: var(--red); }       .status.red .sdot { background: var(--red); }
+
+  .beat-body h3 {
+    font-family: "JetBrains Mono", monospace; font-weight: 500;
+    font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 26px 0 9px;
+  }
+  .beat-body h3:first-child { margin-top: 0; }
+  .beat-body p { margin: 0 0 12px; color: var(--ink); }
+  .beat-body ul { margin: 0 0 14px; padding-left: 0; list-style: none; }
+  .beat-body li { position: relative; padding-left: 22px; margin-bottom: 9px; }
+  .beat-body li::before { content: "—"; position: absolute; left: 0; color: var(--accent); }
+  .beat-body strong { font-weight: 500; color: #fff; }
+  .beat-body code { font-family: "JetBrains Mono", monospace; font-size: .8em; background: var(--bg-raise); padding: 2px 6px; border-radius: 4px; color: var(--ink-dim); }
+
+  .empty { color: var(--ink-faint); font-style: italic; padding: 56px 0; font-size: 18px; }
+  footer { margin-top: 72px; padding-top: 22px; border-top: 1px solid var(--rule); font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--ink-faint); line-height: 1.9; }
+  footer b { color: var(--ink-dim); font-weight: 500; }
+
+  @media (max-width: 520px) {
+    .wrap { padding: 24px 18px 96px; }
+    nav.top { margin-bottom: 44px; }
+    .lede { font-size: 18px; }
+    .status { margin-left: 0; }
+    .beat-head { flex-wrap: wrap; gap: 8px 14px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="top">
+      <a href="https://amitdialpad.github.io/house-of-air/">Amit Ayre</a>
+      <span class="sep">/</span>
+      <span class="here">Heartbeats</span>
+    </nav>
+
+    <header>
+      <h1>Write, don't <em>meet</em>.</h1>
+      <p class="lede">Short, considered notes between Amit and Josh — read them whenever there's a free moment. Green is fine, a concern wants a nudge, a red flag wants a decision.</p>
+    </header>
+
+    <div class="roster" id="roster"></div>
+    <div class="filters" id="filters"></div>
+    <main id="feed"></main>
+
+    <footer>
+      To post: type <b>beat</b> in your terminal, or open a "New beat" issue.<br/>
+      <span id="gen"></span>
+    </footer>
+  </div>
+
+<script>
+const NAMES = { amit: "Amit", josh: "Josh" };
+const cap = s => NAMES[s] || (s ? s[0].toUpperCase() + s.slice(1) : "");
+const fmtDate = d => {
+  const dt = new Date(d + "T00:00:00");
+  return isNaN(dt) ? d : dt.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+};
+let DATA = { entries: [] };
+let filter = "all";
+
+function startOfWeek() {
+  const n = new Date(); const day = (n.getDay() + 6) % 7;
+  n.setHours(0,0,0,0); n.setDate(n.getDate() - day); return n;
+}
+function renderRoster() {
+  const people = ["amit", "josh"];
+  const since = startOfWeek();
+  const posted = new Set(DATA.entries.filter(e => new Date(e.date + "T00:00:00") >= since).map(e => e.author));
+  document.getElementById("roster").innerHTML =
+    '<span class="lbl">this week</span>' + people.map(p => {
+      const on = posted.has(p);
+      return `<span class="person ${on ? "in" : "out"}"><span class="dot"></span>${cap(p)}${on ? "" : ' <span class="miss">— no beat yet</span>'}</span>`;
+    }).join("");
+}
+function renderFilters() {
+  const defs = [["all","All"],["concern","Concerns"],["red","Red flags"],["amit","Amit"],["josh","Josh"]];
+  const el = document.getElementById("filters");
+  el.innerHTML = defs.map(([k,l]) => `<button class="filter ${filter===k?"active":""}" data-k="${k}">${l}</button>`).join("");
+  el.querySelectorAll(".filter").forEach(b => b.onclick = () => { filter = b.dataset.k; renderFilters(); renderFeed(); });
+}
+function match(e) {
+  if (filter === "all") return true;
+  if (filter === "concern") return e.hasConcerns || e.status === "concern";
+  if (filter === "red") return e.hasRedFlags || e.status === "red";
+  return e.author === filter;
+}
+function statusLabel(s){ return s === "red" ? "red flag" : s; }
+function renderFeed() {
+  const feed = document.getElementById("feed");
+  const list = DATA.entries.filter(match);
+  if (!list.length) { feed.innerHTML = '<p class="empty">Nothing here yet — the first beat will show up the moment it\u2019s posted.</p>'; return; }
+  feed.innerHTML = list.map((e,i) => `
+    <article class="beat" style="animation-delay:${Math.min(i*70,420)}ms">
+      <div class="beat-head">
+        <span class="author">${cap(e.author)}</span>
+        <span class="when">${fmtDate(e.date)}</span>
+        <span class="status ${e.status}"><span class="sdot"></span>${statusLabel(e.status)}</span>
+      </div>
+      <div class="beat-body">${e.html}</div>
+    </article>`).join("");
+}
+fetch("./data/index.json", { cache: "no-store" })
+  .then(r => r.json())
+  .then(d => { DATA = d; document.getElementById("gen").textContent = d.generated ? "updated " + new Date(d.generated).toLocaleString() : ""; renderRoster(); renderFilters(); renderFeed(); })
+  .catch(() => { document.getElementById("feed").innerHTML = '<p class="empty">Couldn\u2019t load beats. Run <code>npm run build</code> first.</p>'; });
+</script>
+</body>
+</html>

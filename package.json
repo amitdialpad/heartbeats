@@ -1,0 +1,15 @@
+{
+  "name": "heartbeats",
+  "version": "1.0.0",
+  "description": "Async written updates between Amit and Josh. Write a beat, save, done.",
+  "type": "module",
+  "bin": {
+    "beat": "./bin/beat.mjs"
+  },
+  "scripts": {
+    "beat": "node ./bin/beat.mjs",
+    "build": "node ./scripts/build-index.mjs",
+    "preview": "npm run build && node ./scripts/serve.mjs"
+  },
+  "license": "MIT"
+}

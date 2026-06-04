@@ -1,0 +1,14 @@
+{
+  "generated": "2026-06-04T04:40:22.058Z",
+  "entries": [
+    {
+      "id": "2026-06-04-amit",
+      "author": "amit",
+      "date": "2026-06-04",
+      "status": "red",
+      "hasConcerns": true,
+      "hasRedFlags": true,
+      "html": "<h3>Where I'm at</h3>\n<p>Cleaning up the invoice/billing summary page that got pushed into Dialpad beta, and pushing back on a batch of AI-generated invoice emails before they reach customers.</p>\n<h3>Green</h3>\n<ul><li>Billing summary cleanup is in Design Studio — expand-all / collapse-all working, aligned to our patterns.</li><li>Four PRs from last week are through QA; fixing the bits that came back.</li></ul>\n<h3>Concerns</h3>\n<ul><li><strong>Invoice vs. Details</strong> — we have two near-identical heavy pages and I still can't get a straight answer on why. A summary should be a quick glance; the full bill is a separate thing. Trying to settle the strategy before touching code.</li><li><strong>Engineering bandwidth</strong> — nine of ten engineers are on customer/migration work, so net-new billing functionality is effectively stalled this quarter.</li></ul>\n<h3>Red flags</h3>\n<ul><li><strong>AI-generated emails shipping to customers</strong> — the new invoice emails have JavaScript and CSS classes that will never render in an email client, and they're off-brand. This can't go out as-is. I've written up exactly what's wrong and how email HTML should be done. Need us to agree it doesn't ship until it's fixed.</li></ul>\n<h3>Point of view</h3>\n<ul><li>On the NetSuite invoice Vincent wants changed: it was approved, it's an established pattern customers already receive, and it's clean for a printed PDF. I'd standardize on it and roll tweaks across the board rather than rebuild a one-off. Writing this down so I hold the line in the call instead of getting argued out of it.</li></ul>"
+    }
+  ]
+}
