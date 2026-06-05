@@ -1236,6 +1236,10 @@ function markdownInline(node, assetMap) {
   return Array.from(node.childNodes).map(child => markdownInline(child, assetMap)).join("");
 }
 
+function isBlockTag(tag) {
+  return ["blockquote", "div", "figure", "h1", "h2", "h3", "h4", "hr", "li", "ol", "p", "ul"].includes(tag);
+}
+
 function markdownBlock(node, assetMap) {
   if (node.nodeType === Node.TEXT_NODE) return node.textContent.trim();
   if (node.nodeType !== Node.ELEMENT_NODE) return "";
@@ -1259,7 +1263,7 @@ function markdownBlock(node, assetMap) {
   }
   if (tag === "hr") return "---";
   if (tag === "p" || tag === "div" || tag === "li") {
-    const nestedBlocks = Array.from(node.children).filter(child => ["figure", "ul", "ol", "blockquote", "h1", "h2", "h3", "h4", "hr"].includes(child.tagName.toLowerCase()));
+    const nestedBlocks = Array.from(node.children).filter(child => isBlockTag(child.tagName.toLowerCase()));
     if (nestedBlocks.length) {
       return Array.from(node.childNodes).map(child => markdownBlock(child, assetMap)).filter(Boolean).join("\n\n");
     }
