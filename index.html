@@ -62,12 +62,15 @@
 
   .plain-button {
     min-height: 38px;
+    display: inline-flex;
+    align-items: center;
     border: 0;
     border-radius: 6px;
     background: transparent;
     color: var(--muted);
     padding: 0 10px;
     font-size: 14px;
+    text-decoration: none;
   }
 
   .plain-button:hover {
@@ -85,10 +88,17 @@
     min-height: calc(100vh - 166px);
   }
 
+  .today-date {
+    margin: 0 0 18px;
+    color: var(--quiet);
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
   .beat-input {
     display: block;
     width: 100%;
-    min-height: calc(100vh - 166px);
+    min-height: calc(100vh - 208px);
     resize: none;
     overflow: hidden;
     border: 0;
@@ -245,7 +255,7 @@
     }
 
     .beat-input {
-      min-height: calc(100vh - 176px);
+      min-height: calc(100vh - 214px);
       font-size: 27px;
       line-height: 1.55;
     }
@@ -284,6 +294,7 @@
 <body>
   <main>
     <section class="writer" aria-label="Write today's beat">
+      <p class="today-date" id="todayDate"></p>
       <textarea class="beat-input" id="beatInput" spellcheck="true" placeholder="Write clean text."></textarea>
     </section>
   </main>
@@ -291,6 +302,7 @@
   <footer class="footer-bar">
     <div class="project-access">
       <a class="project" href="https://amitdialpad.github.io/heartbeats/">Heartbeats</a>
+      <a class="plain-button" href="./archive.html">Past updates</a>
       <button class="plain-button" id="settingsButton" type="button">Setup</button>
     </div>
     <div class="meta" id="meta"></div>
@@ -330,6 +342,7 @@ const STORAGE = {
 const input = document.getElementById("beatInput");
 const doneButton = document.getElementById("doneButton");
 const meta = document.getElementById("meta");
+const todayDate = document.getElementById("todayDate");
 const settingsDialog = document.getElementById("settingsDialog");
 const settingsButton = document.getElementById("settingsButton");
 const authorInput = document.getElementById("authorInput");
@@ -349,13 +362,21 @@ function localTime(d = new Date()) {
   return `${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
 }
 
+function displayDate(d = new Date()) {
+  return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+}
+
 function wordCount(text) {
   return (text.trim().match(/\S+/g) || []).length;
 }
 
+function minimumInputHeight() {
+  return window.innerHeight - (window.matchMedia("(max-width: 640px)").matches ? 214 : 208);
+}
+
 function resizeInput() {
   input.style.height = "auto";
-  input.style.height = Math.max(input.scrollHeight, window.innerHeight - 166) + "px";
+  input.style.height = Math.max(input.scrollHeight, minimumInputHeight()) + "px";
 }
 
 function updateMeta() {
@@ -534,6 +555,7 @@ doneButton.addEventListener("click", async () => {
 });
 
 input.value = localStorage.getItem(STORAGE.draft) || "";
+todayDate.textContent = displayDate();
 resizeInput();
 updateMeta();
 </script>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Past updates - Heartbeats</title>
+<style>
+  :root {
+    --page: #fff;
+    --ink: #1f1f1f;
+    --muted: #666;
+    --quiet: #8a8a8a;
+    --line: #e6e6e6;
+    --soft: #f7f7f7;
+    --focus: #111;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    font-size: 18px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  a {
+    color: inherit;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+
+  main {
+    width: 100%;
+    min-height: 100vh;
+    padding: 54px clamp(24px, 5.8vw, 96px) 112px;
+  }
+
+  .page-title {
+    margin: 0 0 44px;
+    color: var(--ink);
+    font-size: 32px;
+    font-weight: 650;
+    line-height: 1.22;
+  }
+
+  .archive {
+    max-width: 900px;
+  }
+
+  .beat {
+    padding: 34px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .beat:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .beat-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 22px;
+  }
+
+  .beat-title {
+    display: block;
+    color: var(--ink);
+    font-size: 22px;
+    font-weight: 650;
+    line-height: 1.25;
+  }
+
+  .beat-date,
+  .beat-status {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .beat-date {
+    display: block;
+    margin-top: 3px;
+  }
+
+  .beat-status {
+    flex: none;
+    white-space: nowrap;
+  }
+
+  .beat-body {
+    max-width: 76ch;
+  }
+
+  .beat-body h3 {
+    margin: 28px 0 8px;
+    color: var(--ink);
+    font-size: 17px;
+    font-weight: 650;
+    line-height: 1.35;
+  }
+
+  .beat-body h3:first-child {
+    margin-top: 0;
+  }
+
+  .beat-body p {
+    margin: 0 0 14px;
+  }
+
+  .beat-body ul {
+    margin: 0 0 18px;
+    padding-left: 1.25em;
+  }
+
+  .beat-body li {
+    margin: 0 0 10px;
+    padding-left: .1em;
+  }
+
+  .beat-body strong {
+    font-weight: 650;
+  }
+
+  code {
+    border-radius: 4px;
+    background: var(--soft);
+    color: var(--ink);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: .86em;
+    padding: 2px 5px;
+  }
+
+  .empty {
+    margin: 0;
+    color: var(--muted);
+    font-size: 18px;
+  }
+
+  .footer-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    padding: 14px clamp(18px, 3vw, 34px);
+    background: var(--page);
+    border-top: 1px solid var(--line);
+  }
+
+  .project {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.2;
+    text-decoration: none;
+  }
+
+  .plain-link {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 6px;
+    color: var(--muted);
+    padding: 0 10px;
+    font-size: 14px;
+    text-decoration: none;
+  }
+
+  .plain-link:hover {
+    background: var(--soft);
+    color: var(--ink);
+  }
+
+  @media (max-width: 640px) {
+    main {
+      padding: 34px 18px 118px;
+    }
+
+    .page-title {
+      margin-bottom: 30px;
+      font-size: 28px;
+    }
+
+    .beat-head {
+      display: block;
+    }
+
+    .beat-status {
+      display: block;
+      margin-top: 8px;
+      white-space: normal;
+    }
+
+    .footer-bar {
+      padding: 11px 12px;
+    }
+  }
+</style>
+</head>
+<body>
+  <main>
+    <h1 class="page-title">Past updates</h1>
+    <section class="archive" id="archive" aria-label="Past updates"></section>
+  </main>
+
+  <footer class="footer-bar">
+    <a class="project" href="./">Heartbeats</a>
+    <a class="plain-link" href="./">Write</a>
+  </footer>
+
+<script>
+const archive = document.getElementById("archive");
+const NAMES = { amit: "Amit", josh: "Josh" };
+
+function cap(s) {
+  return NAMES[s] || (s ? s[0].toUpperCase() + s.slice(1) : "");
+}
+
+function displayDate(d) {
+  const dt = new Date(d + "T00:00:00");
+  return isNaN(dt) ? d : dt.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+}
+
+function statusLabel(s) {
+  if (s === "red") return "Red flag";
+  if (s === "concern") return "Concern";
+  return "Fine";
+}
+
+function render(entries) {
+  if (!entries.length) {
+    archive.innerHTML = '<p class="empty">No past updates yet.</p>';
+    return;
+  }
+
+  archive.innerHTML = entries.map(entry => `
+    <article class="beat">
+      <div class="beat-head">
+        <div>
+          <span class="beat-title">${cap(entry.author)}</span>
+          <time class="beat-date" datetime="${entry.date}">${displayDate(entry.date)}</time>
+        </div>
+        <span class="beat-status">${statusLabel(entry.status)}</span>
+      </div>
+      <div class="beat-body">${entry.html}</div>
+    </article>
+  `).join("");
+}
+
+async function loadArchive() {
+  try {
+    const response = await fetch("./data/index.json", { cache: "no-store" });
+    const data = await response.json();
+    render(data.entries || []);
+  } catch {
+    archive.innerHTML = '<p class="empty">Could not load past updates.</p>';
+  }
+}
+
+loadArchive();
+</script>
+</body>
+</html>
