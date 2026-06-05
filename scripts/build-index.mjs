@@ -36,6 +36,25 @@ function safeUrl(raw) {
   const url = raw.trim();
   return /^(https?:|mailto:|#|\/|\.\/|\.\.\/|assets\/|[a-z0-9._~/-]+(?:[?#][^\s]*)?$)/i.test(url) ? attr(url) : "#";
 }
+function linkHost(raw) {
+  try {
+    return new URL(raw).hostname.replace(/^www\./, "");
+  } catch {
+    return raw.replace(/^https?:\/\//, "").split("/")[0] || raw;
+  }
+}
+function standaloneLink(t) {
+  const markdown = t.match(/^\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)$/);
+  if (markdown) return { label: markdown[1].trim(), url: markdown[2].trim() };
+  const raw = t.match(/^(https?:\/\/[^\s<]+)$/);
+  if (!raw) return null;
+  return { label: linkHost(raw[1]), url: raw[1].replace(/[.,;:!?]+$/, "") };
+}
+function linkCard(url, label) {
+  const clean = url.trim();
+  const title = (label || "").trim() || linkHost(clean);
+  return `<a class="link-card" href="${safeUrl(clean)}" target="_blank" rel="noopener"><span class="link-card-title">${esc(title)}</span><span class="link-card-url">${attr(linkHost(clean))}</span></a>`;
+}
 function sectionKey(s) {
   const key = s.trim().toLowerCase();
   return ["green", "concerns", "red flags", "point of view"].includes(key) ? key : "";
@@ -79,6 +98,8 @@ function mdToHtml(md) {
       out.push(`<figure><img src="${safeUrl(image[2])}" alt="${attr(caption)}" loading="lazy">${caption ? `<figcaption>${inline(caption)}</figcaption>` : ""}</figure>`);
       continue;
     }
+    const card = standaloneLink(t);
+    if (card) { flush(); out.push(linkCard(card.url, card.label)); continue; }
     if (/^-{3,}$/.test(t)) { flush(); out.push("<hr>"); continue; }
     if (t.startsWith("# ")) { flush(); out.push(`<h2>${inline(t.slice(2))}</h2>`); continue; }
     if (t.startsWith("## ")) {

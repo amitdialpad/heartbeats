@@ -100,6 +100,13 @@
     line-height: 1.58;
   }
 
+  .preview-body {
+    width: 100%;
+    color: var(--ink);
+    font-size: 32px;
+    line-height: 1.58;
+  }
+
   .editor:empty::before,
   figcaption:empty::before {
     content: attr(data-placeholder);
@@ -226,10 +233,11 @@
   }
 
   .preview-panel {
-    width: min(100%, 980px);
+    width: 100%;
   }
 
   .preview-title {
+    display: none;
     margin: 0 0 30px;
     color: var(--quiet);
     font-size: 15px;
@@ -242,6 +250,49 @@
     border: 0;
     background: var(--line);
     margin: 28px 0;
+  }
+
+  .preview-body a:not(.link-card) {
+    text-decoration-thickness: 1px;
+    text-underline-offset: 5px;
+  }
+
+  .preview-body .link-card {
+    display: block;
+    width: min(100%, 760px);
+    margin: 10px 0 30px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--page);
+    color: var(--ink);
+    padding: 15px 16px 14px;
+    text-decoration: none;
+  }
+
+  .preview-body .link-card:hover {
+    background: var(--soft);
+  }
+
+  .preview-body .link-card-title,
+  .preview-body .link-card-url {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .preview-body .link-card-title {
+    color: var(--ink);
+    font-size: 17px;
+    font-weight: 650;
+    line-height: 1.35;
+  }
+
+  .preview-body .link-card-url {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.35;
   }
 
   .empty {
@@ -442,7 +493,8 @@
       padding: 34px 18px 230px;
     }
 
-    .editor {
+    .editor,
+    .preview-body {
       min-height: calc(100vh - 264px);
       font-size: 27px;
       line-height: 1.55;
@@ -719,6 +771,28 @@ function safeUrl(raw) {
   return /^(https?:|mailto:|#|\/|\.\/|\.\.\/|assets\/|data:image\/|[a-z0-9._~/-]+(?:[?#][^\s]*)?$)/i.test(url) ? attr(url) : "#";
 }
 
+function linkHost(raw) {
+  try {
+    return new URL(raw).hostname.replace(/^www\./, "");
+  } catch {
+    return raw.replace(/^https?:\/\//, "").split("/")[0] || raw;
+  }
+}
+
+function standaloneLink(t) {
+  const markdown = t.match(/^\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)$/);
+  if (markdown) return { label: markdown[1].trim(), url: markdown[2].trim() };
+  const raw = t.match(/^(https?:\/\/[^\s<]+)$/);
+  if (!raw) return null;
+  return { label: linkHost(raw[1]), url: raw[1].replace(/[.,;:!?]+$/, "") };
+}
+
+function linkCard(url, label) {
+  const clean = url.trim();
+  const title = (label || "").trim() || linkHost(clean);
+  return `<a class="link-card" href="${safeUrl(clean)}" target="_blank" rel="noopener"><span class="link-card-title">${esc(title)}</span><span class="link-card-url">${attr(linkHost(clean))}</span></a>`;
+}
+
 function sectionKey(s) {
   const key = s.trim().toLowerCase();
   return ["green", "concerns", "red flags", "point of view"].includes(key) ? key : "";
@@ -765,6 +839,8 @@ function mdToHtml(md) {
       out.push(`<figure><img src="${safeUrl(image[2])}" alt="${attr(caption)}" loading="lazy">${caption ? `<figcaption>${inline(caption)}</figcaption>` : ""}</figure>`);
       continue;
     }
+    const card = standaloneLink(t);
+    if (card) { flush(); out.push(linkCard(card.url, card.label)); continue; }
     if (/^-{3,}$/.test(t)) { flush(); out.push("<hr>"); continue; }
     if (t.startsWith("# ")) { flush(); out.push(`<h2>${inline(t.slice(2))}</h2>`); continue; }
     if (t.startsWith("## ")) {

@@ -230,6 +230,49 @@
     line-height: 1.45;
   }
 
+  .beat-body a:not(.link-card) {
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+
+  .beat-body .link-card {
+    display: block;
+    width: min(100%, 720px);
+    margin: 8px 0 24px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--page);
+    color: var(--ink);
+    padding: 14px 15px 13px;
+    text-decoration: none;
+  }
+
+  .beat-body .link-card:hover {
+    background: var(--soft);
+  }
+
+  .beat-body .link-card-title,
+  .beat-body .link-card-url {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .beat-body .link-card-title {
+    color: var(--ink);
+    font-size: 16px;
+    font-weight: 650;
+    line-height: 1.35;
+  }
+
+  .beat-body .link-card-url {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
   .beat-body hr {
     height: 1px;
     border: 0;
