@@ -88,17 +88,10 @@
     min-height: calc(100vh - 166px);
   }
 
-  .today-date {
-    margin: 0 0 18px;
-    color: var(--quiet);
-    font-size: 15px;
-    line-height: 1.4;
-  }
-
   .beat-input {
     display: block;
     width: 100%;
-    min-height: calc(100vh - 208px);
+    min-height: calc(100vh - 166px);
     resize: none;
     overflow: hidden;
     border: 0;
@@ -255,7 +248,7 @@
     }
 
     .beat-input {
-      min-height: calc(100vh - 214px);
+      min-height: calc(100vh - 176px);
       font-size: 27px;
       line-height: 1.55;
     }
@@ -294,14 +287,13 @@
 <body>
   <main>
     <section class="writer" aria-label="Write today's beat">
-      <p class="today-date" id="todayDate"></p>
       <textarea class="beat-input" id="beatInput" spellcheck="true" placeholder="Write clean text."></textarea>
     </section>
   </main>
 
   <footer class="footer-bar">
     <div class="project-access">
-      <a class="project" href="https://amitdialpad.github.io/heartbeats/">Heartbeats</a>
+      <a class="project" id="footerDate" href="https://amitdialpad.github.io/heartbeats/"></a>
       <a class="plain-button" href="./archive.html">Past updates</a>
       <button class="plain-button" id="settingsButton" type="button">Setup</button>
     </div>
@@ -342,7 +334,7 @@ const STORAGE = {
 const input = document.getElementById("beatInput");
 const doneButton = document.getElementById("doneButton");
 const meta = document.getElementById("meta");
-const todayDate = document.getElementById("todayDate");
+const footerDate = document.getElementById("footerDate");
 const settingsDialog = document.getElementById("settingsDialog");
 const settingsButton = document.getElementById("settingsButton");
 const authorInput = document.getElementById("authorInput");
@@ -371,7 +363,7 @@ function wordCount(text) {
 }
 
 function minimumInputHeight() {
-  return window.innerHeight - (window.matchMedia("(max-width: 640px)").matches ? 214 : 208);
+  return window.innerHeight - (window.matchMedia("(max-width: 640px)").matches ? 176 : 166);
 }
 
 function resizeInput() {
@@ -555,7 +547,7 @@ doneButton.addEventListener("click", async () => {
 });
 
 input.value = localStorage.getItem(STORAGE.draft) || "";
-todayDate.textContent = displayDate();
+footerDate.textContent = displayDate();
 resizeInput();
 updateMeta();
 </script>
