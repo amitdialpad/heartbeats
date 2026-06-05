@@ -10,6 +10,17 @@ their own time. Green is fine, concerns need a nudge, red flags need a decision.
 
 ## Daily use (the whole thing)
 
+Open the live page, write the end-of-day note, hit **Done**.
+
+The page turns the note into an `updates/*.md` beat, commits it to GitHub, and the
+site updates in about a minute. Status is inferred from the text, so you do not
+need to fill out green / concern / red fields.
+
+One-time browser setup: save a fine-grained GitHub token in the page setup dialog
+with access to `amitdialpad/heartbeats` and Contents read/write permission.
+
+## Terminal fallback
+
 ```bash
 beat
 ```
@@ -18,8 +29,8 @@ Your editor opens with today's template filled in. Write, save, close. It commit
 and pushes immediately and the site updates in ~1 minute. Close without saving (or
 leave the body as placeholders) and nothing posts.
 
-No terminal? Open a **New beat** issue on the repo — same fields, works on mobile.
-It's converted to a post and the issue closes itself.
+No token or terminal? Open a **New beat** issue on the repo. It still converts to a
+post and closes itself.
 
 ---
 
@@ -41,8 +52,8 @@ It's converted to a post and the issue closes itself.
    > `npm link` resolves the command globally, but `beat` must be run **inside the
    > repo** (it commits there). Tip: add `alias beat="cd ~/code/heartbeats && beat"`.
 
-4. **Josh:** give him write access to the repo. He uses the **New beat** issue form —
-   no setup, no terminal.
+4. **Josh:** give him write access to the repo. He can use the page with his own
+   token, or the **New beat** issue form with no setup.
 
 ---
 
@@ -65,5 +76,5 @@ identical.
 ## Format
 
 Each beat is one Markdown file in `updates/` with frontmatter (`author`, `date`,
-`status: green|concern|red`) and sections: Where I'm at · Green · Concerns ·
-Red flags · Point of view. First draft is yours, in your own words — AI only polishes.
+`status: green|concern|red`) and Markdown body. The page writes a plain `Note`
+section and infers status from the text. First draft is yours, in your own words.
