@@ -32,6 +32,7 @@
     line-height: 1.62;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    overflow-x: hidden;
   }
 
   button,
@@ -81,20 +82,17 @@
   main {
     width: 100%;
     min-height: 100vh;
-    padding: 54px clamp(24px, 5.8vw, 96px) 112px;
+    padding: 54px clamp(24px, 5.8vw, 96px) 136px;
   }
 
   .writer {
     min-height: calc(100vh - 166px);
   }
 
-  .beat-input {
+  .editor {
     display: block;
     width: 100%;
-    min-height: calc(100vh - 166px);
-    resize: none;
-    overflow: hidden;
-    border: 0;
+    min-height: calc(100vh - 190px);
     background: transparent;
     color: var(--ink);
     padding: 0;
@@ -102,13 +100,175 @@
     line-height: 1.58;
   }
 
-  .beat-input::placeholder {
+  .editor:empty::before,
+  figcaption:empty::before {
+    content: attr(data-placeholder);
     color: var(--quiet);
-    opacity: 1;
+    pointer-events: none;
   }
 
-  .beat-input:focus {
+  .editor:empty::after {
+    content: "";
+    display: inline-block;
+    width: 2px;
+    height: .95em;
+    margin-left: 7px;
+    background: var(--ink);
+    vertical-align: -.1em;
+    animation: cursor-blink 1.05s steps(2, start) infinite;
+  }
+
+  @keyframes cursor-blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  .editor:focus {
     outline: 0;
+  }
+
+  .editor p,
+  .preview-body p {
+    margin: 0 0 18px;
+    overflow-wrap: anywhere;
+  }
+
+  .editor h2,
+  .preview-body h2 {
+    margin: 0 0 20px;
+    font-size: 34px;
+    font-weight: 650;
+    line-height: 1.2;
+  }
+
+  .editor h3,
+  .preview-body h3 {
+    margin: 28px 0 10px;
+    font-size: 22px;
+    font-weight: 650;
+    line-height: 1.3;
+  }
+
+  .editor h3[data-section],
+  .preview-body h3.section-label {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    margin: 30px 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink);
+    padding: 0 9px;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1;
+  }
+
+  .editor h4,
+  .preview-body h4 {
+    margin: 22px 0 8px;
+    font-size: 16px;
+    font-weight: 650;
+    line-height: 1.35;
+  }
+
+  .editor ul,
+  .preview-body ul {
+    margin: 0 0 22px;
+    padding-left: 1.25em;
+  }
+
+  .editor li,
+  .preview-body li {
+    margin: 0 0 10px;
+  }
+
+  .editor blockquote,
+  .preview-body blockquote {
+    margin: 24px 0;
+    padding-left: 18px;
+    border-left: 2px solid var(--line);
+    color: var(--muted);
+  }
+
+  .editor a,
+  .preview-body a {
+    color: var(--ink);
+  }
+
+  .editor figure,
+  .preview-body figure {
+    margin: 26px 0 30px;
+  }
+
+  .editor img,
+  .preview-body img {
+    display: block;
+    width: 100%;
+    max-width: 980px;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--soft);
+  }
+
+  .editor figcaption,
+  .preview-body figcaption {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  .editor.is-drop-target {
+    box-shadow: inset 0 0 0 2px var(--line);
+  }
+
+  .preview-panel {
+    width: min(100%, 980px);
+  }
+
+  .preview-title {
+    margin: 0 0 30px;
+    color: var(--quiet);
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .preview-body hr {
+    height: 1px;
+    border: 0;
+    background: var(--line);
+    margin: 28px 0;
+  }
+
+  .empty {
+    margin: 0;
+    color: var(--muted);
+    font-size: 18px;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  .file-input {
+    position: fixed;
+    inline-size: 1px;
+    block-size: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .chrome-hotspot {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    height: 120px;
   }
 
   .footer-bar {
@@ -124,12 +284,33 @@
     padding: 14px clamp(18px, 3vw, 34px);
     background: var(--page);
     border-top: 1px solid var(--line);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(18px);
+    transition: opacity .7s ease, transform .7s ease;
+  }
+
+  .chrome-hotspot:hover + .footer-bar,
+  .footer-bar:hover,
+  .footer-bar:focus-within,
+  body.chrome-visible .footer-bar {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  body.chrome-suppressed .footer-bar {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(18px);
   }
 
   .project-access {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 8px;
+    min-width: 0;
   }
 
   .project {
@@ -138,6 +319,20 @@
     font-weight: 650;
     line-height: 1.2;
     text-decoration: none;
+  }
+
+  .section-button {
+    min-height: 24px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink);
+    padding: 0 9px;
+    font-size: 12px;
+    font-weight: 650;
+  }
+
+  .section-button:hover {
+    background: var(--soft);
   }
 
   .meta {
@@ -244,31 +439,53 @@
 
   @media (max-width: 640px) {
     main {
-      padding: 34px 18px 142px;
+      padding: 34px 18px 230px;
     }
 
-    .beat-input {
-      min-height: calc(100vh - 176px);
+    .editor {
+      min-height: calc(100vh - 264px);
       font-size: 27px;
       line-height: 1.55;
     }
 
+    .editor h2,
+    .preview-body h2 {
+      font-size: 29px;
+    }
+
+    .editor h3,
+    .preview-body h3 {
+      font-size: 21px;
+    }
+
     .footer-bar {
-      grid-template-columns: 1fr auto;
+      grid-template-columns: 1fr;
       gap: 8px 12px;
       padding: 11px 12px;
     }
 
     .project-access {
-      gap: 4px;
+      width: 100%;
+      gap: 4px 8px;
+    }
+
+    .project {
+      flex-basis: 100%;
     }
 
     .plain-button {
-      padding: 0 8px;
+      min-height: 34px;
+      padding: 0 5px;
+      font-size: 13px;
+    }
+
+    .section-button {
+      min-height: 28px;
+      padding: 0 7px;
+      font-size: 12px;
     }
 
     .meta {
-      grid-column: 1 / -1;
       width: 100%;
       min-height: 18px;
       overflow: hidden;
@@ -278,6 +495,7 @@
     }
 
     .done-button {
+      width: 100%;
       min-width: 74px;
       padding: 0 14px;
     }
@@ -287,19 +505,32 @@
 <body>
   <main>
     <section class="writer" aria-label="Write today's beat">
-      <textarea class="beat-input" id="beatInput" spellcheck="true" placeholder="Write clean text."></textarea>
+      <div class="editor" id="editor" contenteditable="true" spellcheck="true" data-placeholder="Start writing"></div>
+      <section class="preview-panel" id="previewPanel" hidden aria-label="Preview">
+        <p class="preview-title">Preview</p>
+        <div class="preview-body" id="previewBody"></div>
+      </section>
     </section>
   </main>
 
+  <div class="chrome-hotspot" id="chromeHotspot" aria-hidden="true"></div>
   <footer class="footer-bar">
     <div class="project-access">
       <a class="project" id="footerDate" href="https://amitdialpad.github.io/heartbeats/"></a>
       <a class="plain-button" href="./archive.html">Past updates</a>
+      <button class="plain-button" id="imageButton" type="button">Image</button>
+      <button class="plain-button" id="linkButton" type="button">Link</button>
+      <button class="plain-button section-button" type="button" data-section-button="green">Green</button>
+      <button class="plain-button section-button" type="button" data-section-button="concerns">Concerns</button>
+      <button class="plain-button section-button" type="button" data-section-button="red-flags">Red flags</button>
+      <button class="plain-button section-button" type="button" data-section-button="point-of-view">POV</button>
+      <button class="plain-button" id="previewButton" type="button">Preview</button>
       <button class="plain-button" id="settingsButton" type="button">Setup</button>
     </div>
     <div class="meta" id="meta"></div>
     <button class="done-button" id="doneButton" type="button">Done</button>
   </footer>
+  <input class="file-input" id="imageInput" type="file" accept="image/*" multiple />
 
   <dialog id="settingsDialog">
     <form class="settings" method="dialog">
@@ -329,9 +560,28 @@ const STORAGE = {
   token: "heartbeats.githubToken",
   author: "heartbeats.author",
   draft: "heartbeats.draft",
+  draftContext: "heartbeats.draftContext",
+  editing: "heartbeats.editing",
+  localEntries: "heartbeats.localEntries",
+  localOverrides: "heartbeats.localOverrides",
+};
+const LOCAL_ONLY = ["localhost", "127.0.0.1", ""].includes(location.hostname);
+const DRAFT_DB = {
+  name: "heartbeats-drafts",
+  store: "drafts",
+  key: "active",
 };
 
-const input = document.getElementById("beatInput");
+const editor = document.getElementById("editor");
+const imageInput = document.getElementById("imageInput");
+const imageButton = document.getElementById("imageButton");
+const linkButton = document.getElementById("linkButton");
+const chromeHotspot = document.getElementById("chromeHotspot");
+const footerBar = document.querySelector(".footer-bar");
+const sectionButtons = Array.from(document.querySelectorAll("[data-section-button]"));
+const previewButton = document.getElementById("previewButton");
+const previewPanel = document.getElementById("previewPanel");
+const previewBody = document.getElementById("previewBody");
 const doneButton = document.getElementById("doneButton");
 const meta = document.getElementById("meta");
 const footerDate = document.getElementById("footerDate");
@@ -341,6 +591,17 @@ const authorInput = document.getElementById("authorInput");
 const tokenInput = document.getElementById("tokenInput");
 const saveSettingsButton = document.getElementById("saveSettingsButton");
 const forgetButton = document.getElementById("forgetButton");
+let lastRange = null;
+let showingPreview = false;
+let chromeTimer = null;
+let currentEdit = null;
+
+const SECTION_LABELS = {
+  green: "Green",
+  concerns: "Concerns",
+  "red-flags": "Red flags",
+  "point-of-view": "Point of view",
+};
 
 function pad(n) {
   return String(n).padStart(2, "0");
@@ -358,27 +619,200 @@ function displayDate(d = new Date()) {
   return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
 }
 
-function wordCount(text) {
-  return (text.trim().match(/\S+/g) || []).length;
+function readJson(key, fallback) {
+  try {
+    return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
+  } catch {
+    return fallback;
+  }
 }
 
-function minimumInputHeight() {
-  return window.innerHeight - (window.matchMedia("(max-width: 640px)").matches ? 176 : 166);
+function writeJson(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
 }
 
-function resizeInput() {
-  input.style.height = "auto";
-  input.style.height = Math.max(input.scrollHeight, minimumInputHeight()) + "px";
+function draftContext() {
+  return currentEdit ? { mode: "edit", id: currentEdit.id } : { mode: "new", id: "" };
+}
+
+function contextMatchesCurrent(context = {}) {
+  if (currentEdit) return context.mode === "edit" && context.id === currentEdit.id;
+  return !context.mode || context.mode === "new";
+}
+
+function openDraftDb() {
+  return new Promise((resolve, reject) => {
+    if (!("indexedDB" in window)) {
+      reject(new Error("IndexedDB unavailable"));
+      return;
+    }
+    const request = indexedDB.open(DRAFT_DB.name, 1);
+    request.onupgradeneeded = () => request.result.createObjectStore(DRAFT_DB.store, { keyPath: "key" });
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function saveDraftRecord(html, context = draftContext()) {
+  try {
+    const db = await openDraftDb();
+    await new Promise((resolve, reject) => {
+      const transaction = db.transaction(DRAFT_DB.store, "readwrite");
+      transaction.objectStore(DRAFT_DB.store).put({ key: DRAFT_DB.key, html, context, updatedAt: Date.now() });
+      transaction.oncomplete = resolve;
+      transaction.onerror = () => reject(transaction.error);
+    });
+    db.close();
+  } catch {
+    try {
+      localStorage.setItem(STORAGE.draft, html);
+      writeJson(STORAGE.draftContext, context);
+    } catch {
+      meta.textContent = "Draft too large for browser storage.";
+    }
+  }
+}
+
+async function loadDraftRecord() {
+  try {
+    const db = await openDraftDb();
+    const record = await new Promise((resolve, reject) => {
+      const transaction = db.transaction(DRAFT_DB.store, "readonly");
+      const request = transaction.objectStore(DRAFT_DB.store).get(DRAFT_DB.key);
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => reject(request.error);
+    });
+    db.close();
+    if (record) return record;
+  } catch {}
+
+  const html = localStorage.getItem(STORAGE.draft) || "";
+  if (!html) return null;
+  return { html, context: readJson(STORAGE.draftContext, { mode: "new", id: "" }) };
+}
+
+async function clearDraftRecord() {
+  localStorage.removeItem(STORAGE.draft);
+  localStorage.removeItem(STORAGE.draftContext);
+  try {
+    const db = await openDraftDb();
+    await new Promise((resolve, reject) => {
+      const transaction = db.transaction(DRAFT_DB.store, "readwrite");
+      transaction.objectStore(DRAFT_DB.store).delete(DRAFT_DB.key);
+      transaction.oncomplete = resolve;
+      transaction.onerror = () => reject(transaction.error);
+    });
+    db.close();
+  } catch {}
+}
+
+function esc(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function attr(s) {
+  return esc(s).replace(/"/g, "&quot;");
+}
+
+function safeUrl(raw) {
+  const url = raw.trim();
+  return /^(https?:|mailto:|#|\/|\.\/|\.\.\/|assets\/|data:image\/|[a-z0-9._~/-]+(?:[?#][^\s]*)?$)/i.test(url) ? attr(url) : "#";
+}
+
+function sectionKey(s) {
+  const key = s.trim().toLowerCase();
+  return ["green", "concerns", "red flags", "point of view"].includes(key) ? key : "";
+}
+
+function inline(s) {
+  const tokens = [];
+  const stash = (html) => {
+    tokens.push(html);
+    return `\u0000${tokens.length - 1}\u0000`;
+  };
+
+  let html = esc(s);
+  html = html.replace(/`([^`]+)`/g, (_, code) => stash(`<code>${code}</code>`));
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text, url) => {
+    const label = text.trim() || url.trim();
+    return stash(`<a href="${safeUrl(url)}" target="_blank" rel="noopener">${inline(label)}</a>`);
+  });
+  html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/(^|[\s(])((?:https?:\/\/)[^\s<)]+)/g, (_, lead, url) => {
+    const clean = url.replace(/[.,;:!?]+$/, "");
+    const tail = url.slice(clean.length);
+    return `${lead}${stash(`<a href="${safeUrl(clean)}" target="_blank" rel="noopener">${attr(clean)}</a>`)}${tail}`;
+  });
+  return html.replace(/\u0000(\d+)\u0000/g, (_, i) => tokens[Number(i)] || "");
+}
+
+function mdToHtml(md) {
+  const out = [];
+  let list = null;
+  let quote = null;
+  const flush = () => {
+    if (list) { out.push("<ul>" + list.join("") + "</ul>"); list = null; }
+    if (quote) { out.push("<blockquote>" + quote.join("") + "</blockquote>"); quote = null; }
+  };
+
+  for (const line of md.split("\n")) {
+    const t = line.trim();
+    if (!t) { flush(); continue; }
+    const image = t.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    if (image) {
+      flush();
+      const caption = image[1].trim();
+      out.push(`<figure><img src="${safeUrl(image[2])}" alt="${attr(caption)}" loading="lazy">${caption ? `<figcaption>${inline(caption)}</figcaption>` : ""}</figure>`);
+      continue;
+    }
+    if (/^-{3,}$/.test(t)) { flush(); out.push("<hr>"); continue; }
+    if (t.startsWith("# ")) { flush(); out.push(`<h2>${inline(t.slice(2))}</h2>`); continue; }
+    if (t.startsWith("## ")) {
+      flush();
+      const label = t.slice(3).trim();
+      const key = sectionKey(label);
+      out.push(key ? `<h3 class="section-label" data-section="${attr(key)}">${inline(label)}</h3>` : `<h3>${inline(label)}</h3>`);
+      continue;
+    }
+    if (t.startsWith("### ")) { flush(); out.push(`<h4>${inline(t.slice(4))}</h4>`); continue; }
+    if (t.startsWith("- ")) { (list ||= []).push(`<li>${inline(t.slice(2))}</li>`); continue; }
+    if (t.startsWith("> ")) { (quote ||= []).push(`<p>${inline(t.slice(2))}</p>`); continue; }
+    flush();
+    out.push(`<p>${inline(t)}</p>`);
+  }
+  flush();
+  return out.join("\n");
+}
+
+function editorText() {
+  return editor.innerText.replace(/\u00a0/g, " ").trim();
+}
+
+function wordCount() {
+  return (editorText().match(/\S+/g) || []).length;
+}
+
+function imageCount() {
+  return editor.querySelectorAll("img").length;
+}
+
+function editorIsEmpty() {
+  return !editorText() && imageCount() === 0;
 }
 
 function updateMeta() {
-  const words = wordCount(input.value);
-  if (!words) {
-    meta.textContent = hasToken() ? "Ready" : "Setup needed";
+  const words = wordCount();
+  const images = imageCount();
+  if (!words && !images) {
+    meta.textContent = currentEdit ? "Editing past update" : LOCAL_ONLY ? "Local mode" : hasToken() ? "Ready" : "Setup needed";
     doneButton.disabled = false;
     return;
   }
-  meta.textContent = words === 1 ? "1 word" : `${words} words`;
+  const parts = [];
+  if (words) parts.push(words === 1 ? "1 word" : `${words} words`);
+  if (images) parts.push(images === 1 ? "1 image" : `${images} images`);
+  if (currentEdit) parts.push("editing");
+  meta.textContent = parts.join(", ");
 }
 
 function hasToken() {
@@ -424,16 +858,8 @@ function inferStatus(text) {
   return "green";
 }
 
-function normalizeNote(text) {
-  return text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
-}
-
-function buildMarkdown(note) {
-  const now = new Date();
-  const author = safeAuthor();
-  const date = localDate(now);
-  const status = inferStatus(note);
-  return `---\nauthor: ${author}\ndate: ${date}\nstatus: ${status}\n---\n\n## Note\n${note}\n`;
+function buildMarkdown(note, date, status, author) {
+  return `---\nauthor: ${author}\ndate: ${date}\nstatus: ${status}\n---\n\n${note}\n`;
 }
 
 function bytesToBase64(text) {
@@ -445,15 +871,403 @@ function bytesToBase64(text) {
   return btoa(binary);
 }
 
-async function publishBeat(note) {
-  const token = localStorage.getItem(STORAGE.token);
-  if (!token) throw new Error("setup");
+function rememberSelection() {
+  const selection = window.getSelection();
+  if (!selection || !selection.rangeCount) return;
+  const range = selection.getRangeAt(0);
+  if (editor.contains(range.commonAncestorContainer)) {
+    lastRange = range.cloneRange();
+  }
+}
 
-  const now = new Date();
-  const author = safeAuthor();
-  const date = localDate(now);
-  const path = `updates/${date}-${author}-${localTime(now)}.md`;
-  const markdown = buildMarkdown(note);
+function restoreSelection() {
+  editor.focus();
+  if (!lastRange) return;
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(lastRange);
+}
+
+function insertNodeAtCursor(node) {
+  restoreSelection();
+  const selection = window.getSelection();
+  let range = selection && selection.rangeCount ? selection.getRangeAt(0) : null;
+  if (!range || !editor.contains(range.commonAncestorContainer)) {
+    range = document.createRange();
+    range.selectNodeContents(editor);
+    range.collapse(false);
+  }
+  range.deleteContents();
+  range.insertNode(node);
+  range.setStartAfter(node);
+  range.collapse(true);
+  selection.removeAllRanges();
+  selection.addRange(range);
+  rememberSelection();
+}
+
+function insertTextAtCursor(text) {
+  insertNodeAtCursor(document.createTextNode(text));
+}
+
+function insertHtmlAtCursor(html) {
+  restoreSelection();
+  const template = document.createElement("template");
+  template.innerHTML = html.trim();
+  const fragment = template.content;
+  const selection = window.getSelection();
+  let range = selection && selection.rangeCount ? selection.getRangeAt(0) : null;
+  if (!range || !editor.contains(range.commonAncestorContainer)) {
+    range = document.createRange();
+    range.selectNodeContents(editor);
+    range.collapse(false);
+  }
+  range.deleteContents();
+  range.insertNode(fragment);
+  range.collapse(false);
+  selection.removeAllRanges();
+  selection.addRange(range);
+  rememberSelection();
+}
+
+function slugFileName(name, fallback = "screenshot.png") {
+  const source = name || fallback;
+  const dot = source.lastIndexOf(".");
+  const base = (dot === -1 ? source : source.slice(0, dot)).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "image";
+  const ext = (dot === -1 ? "png" : source.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, "")) || "png";
+  return `${base}.${ext}`;
+}
+
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function insertParagraphBreak() {
+  const p = document.createElement("p");
+  p.appendChild(document.createElement("br"));
+  insertNodeAtCursor(p);
+}
+
+async function insertImageFile(file) {
+  if (!file || !file.type.startsWith("image/")) return;
+  const src = await fileToDataUrl(file);
+  const figure = document.createElement("figure");
+  const img = document.createElement("img");
+  const caption = document.createElement("figcaption");
+  img.src = src;
+  img.alt = "";
+  img.dataset.filename = slugFileName(file.name);
+  caption.contentEditable = "true";
+  caption.dataset.placeholder = "Caption";
+  figure.appendChild(img);
+  figure.appendChild(caption);
+  insertNodeAtCursor(figure);
+  insertParagraphBreak();
+  persistDraft();
+  updateMeta();
+}
+
+async function insertImageFiles(files) {
+  for (const file of files) {
+    await insertImageFile(file);
+  }
+}
+
+function normalizeUrl(url) {
+  const clean = url.trim();
+  if (!clean) return "";
+  return /^(https?:|mailto:)/i.test(clean) ? clean : `https://${clean}`;
+}
+
+function insertLink() {
+  restoreSelection();
+  const selection = window.getSelection();
+  const selectedText = selection && !selection.isCollapsed ? selection.toString().trim() : "";
+  const url = normalizeUrl(window.prompt("Link URL", selectedText.startsWith("http") ? selectedText : "") || "");
+  if (!url) return;
+  const label = selectedText || url;
+  if (selectedText) {
+    document.execCommand("createLink", false, url);
+  } else {
+    const link = document.createElement("a");
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noopener";
+    link.textContent = label;
+    insertNodeAtCursor(link);
+  }
+  persistDraft();
+  updatePreview();
+}
+
+function normalizeEditorBlocks() {
+  for (const node of Array.from(editor.childNodes)) {
+    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+      const p = document.createElement("p");
+      p.textContent = node.textContent;
+      editor.replaceChild(p, node);
+    }
+  }
+}
+
+function isSectionHeading(node) {
+  return node?.nodeType === Node.ELEMENT_NODE && node.tagName.toLowerCase() === "h3" && node.dataset.section;
+}
+
+function legacySectionFor(node) {
+  if (node?.nodeType !== Node.ELEMENT_NODE || node.tagName.toLowerCase() !== "h3") return "";
+  const label = (node.textContent || "").trim().toLowerCase();
+  const aliases = {
+    green: "green",
+    greens: "green",
+    greessn: "green",
+    concern: "concerns",
+    concerns: "concerns",
+    "red flag": "red-flags",
+    "red flags": "red-flags",
+    pov: "point-of-view",
+    "point of view": "point-of-view",
+  };
+  return aliases[label] || "";
+}
+
+function isEmptyBlock(node) {
+  return node?.nodeType === Node.ELEMENT_NODE && !node.querySelector("img") && !(node.textContent || "").trim();
+}
+
+function cleanLoadedDraft() {
+  const blocks = Array.from(editor.children);
+  const meaningfulBlocks = blocks.filter(node => !isEmptyBlock(node));
+  const legacySections = meaningfulBlocks.filter(node => legacySectionFor(node));
+  const onlyLegacySectionScaffold = legacySections.length && legacySections.length === meaningfulBlocks.length;
+
+  if (onlyLegacySectionScaffold) {
+    editor.innerHTML = "";
+    clearDraftRecord();
+    return;
+  }
+
+  for (const node of legacySections) {
+    const section = legacySectionFor(node);
+    node.dataset.section = section;
+    node.textContent = SECTION_LABELS[section];
+  }
+}
+
+function currentTopLevelBlock() {
+  normalizeEditorBlocks();
+  const selection = window.getSelection();
+  let node = selection && selection.rangeCount ? selection.getRangeAt(0).commonAncestorContainer : null;
+  if (node?.nodeType === Node.TEXT_NODE) node = node.parentElement;
+  while (node && node !== editor && node.parentElement !== editor) node = node.parentElement;
+  if (node && node !== editor) return node;
+  return editor.lastElementChild;
+}
+
+function blankParagraph() {
+  const p = document.createElement("p");
+  p.appendChild(document.createElement("br"));
+  return p;
+}
+
+function placeCaretIn(node) {
+  editor.focus();
+  const range = document.createRange();
+  range.selectNodeContents(node);
+  range.collapse(false);
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+  rememberSelection();
+}
+
+function labelCurrentThought(section) {
+  const label = SECTION_LABELS[section];
+  if (!label) return;
+  if (showingPreview) setPreview(false);
+  restoreSelection();
+
+  let block = currentTopLevelBlock();
+  if (!block) {
+    block = blankParagraph();
+    editor.appendChild(block);
+  }
+
+  if (isSectionHeading(block)) {
+    block.dataset.section = section;
+    block.textContent = label;
+    persistDraft();
+    updatePreview();
+    return;
+  }
+
+  const heading = document.createElement("h3");
+  heading.dataset.section = section;
+  heading.textContent = label;
+
+  const previous = block.previousElementSibling;
+  if (isSectionHeading(previous)) {
+    previous.dataset.section = section;
+    previous.textContent = label;
+  } else {
+    block.before(heading);
+  }
+
+  const text = block.innerText?.trim() || "";
+  const hasMedia = Boolean(block.querySelector?.("img"));
+  if (text || hasMedia) {
+    const next = blankParagraph();
+    block.after(next);
+    placeCaretIn(next);
+  } else {
+    placeCaretIn(block);
+  }
+
+  persistDraft();
+  updateMeta();
+  updatePreview();
+  hideChromeSoon(900);
+}
+
+function markdownInline(node, assetMap) {
+  if (node.nodeType === Node.TEXT_NODE) return node.textContent.replace(/\u00a0/g, " ");
+  if (node.nodeType !== Node.ELEMENT_NODE) return "";
+  const tag = node.tagName.toLowerCase();
+  if (tag === "br") return "\n";
+  if (tag === "a") {
+    const label = Array.from(node.childNodes).map(child => markdownInline(child, assetMap)).join("").trim() || node.href;
+    return `[${label}](${node.getAttribute("href") || node.href})`;
+  }
+  if (tag === "strong" || tag === "b") {
+    return `**${Array.from(node.childNodes).map(child => markdownInline(child, assetMap)).join("").trim()}**`;
+  }
+  if (tag === "em" || tag === "i") {
+    return Array.from(node.childNodes).map(child => markdownInline(child, assetMap)).join("");
+  }
+  if (tag === "code") {
+    return `\`${node.textContent.trim()}\``;
+  }
+  if (tag === "img") {
+    const src = assetMap.get(node) || node.getAttribute("src") || "";
+    const alt = node.getAttribute("alt") || "";
+    return `![${alt}](${src})`;
+  }
+  return Array.from(node.childNodes).map(child => markdownInline(child, assetMap)).join("");
+}
+
+function markdownBlock(node, assetMap) {
+  if (node.nodeType === Node.TEXT_NODE) return node.textContent.trim();
+  if (node.nodeType !== Node.ELEMENT_NODE) return "";
+  const tag = node.tagName.toLowerCase();
+  if (tag === "figure") {
+    const img = node.querySelector("img");
+    if (!img) return "";
+    const caption = (node.querySelector("figcaption")?.innerText || img.alt || "").trim();
+    const src = assetMap.get(img) || img.getAttribute("src") || "";
+    return `![${caption}](${src})`;
+  }
+  if (tag === "img") return markdownInline(node, assetMap);
+  if (tag === "h1" || tag === "h2") return `# ${markdownInline(node, assetMap).trim()}`;
+  if (tag === "h3") return `## ${markdownInline(node, assetMap).trim()}`;
+  if (tag === "h4") return `### ${markdownInline(node, assetMap).trim()}`;
+  if (tag === "ul" || tag === "ol") {
+    return Array.from(node.children).filter(child => child.tagName.toLowerCase() === "li").map(li => `- ${markdownInline(li, assetMap).trim()}`).join("\n");
+  }
+  if (tag === "blockquote") {
+    return Array.from(node.childNodes).map(child => markdownBlock(child, assetMap)).filter(Boolean).map(line => `> ${line}`).join("\n");
+  }
+  if (tag === "hr") return "---";
+  if (tag === "p" || tag === "div" || tag === "li") {
+    const nestedBlocks = Array.from(node.children).filter(child => ["figure", "ul", "ol", "blockquote", "h1", "h2", "h3", "h4", "hr"].includes(child.tagName.toLowerCase()));
+    if (nestedBlocks.length) {
+      return Array.from(node.childNodes).map(child => markdownBlock(child, assetMap)).filter(Boolean).join("\n\n");
+    }
+    return markdownInline(node, assetMap).trim();
+  }
+  return Array.from(node.childNodes).map(child => markdownBlock(child, assetMap)).filter(Boolean).join("\n\n");
+}
+
+function editorToMarkdown(assetMap = new Map()) {
+  return Array.from(editor.childNodes).map(node => markdownBlock(node, assetMap)).filter(Boolean).join("\n\n").trim();
+}
+
+function updatePreview() {
+  if (!showingPreview) return;
+  const markdown = editorToMarkdown();
+  previewBody.innerHTML = markdown ? mdToHtml(markdown) : '<p class="empty">Nothing to preview.</p>';
+}
+
+function setPreview(on) {
+  showingPreview = on;
+  editor.hidden = on;
+  previewPanel.hidden = !on;
+  previewButton.textContent = on ? "Write" : "Preview";
+  if (on) updatePreview();
+  if (!on) {
+    editor.focus();
+    rememberSelection();
+  }
+}
+
+function persistDraft() {
+  const html = editor.innerHTML;
+  const context = draftContext();
+  try {
+    localStorage.setItem(STORAGE.draft, html);
+    writeJson(STORAGE.draftContext, context);
+  } catch {}
+  saveDraftRecord(html, context);
+}
+
+function revealChrome(duration = 2600) {
+  clearTimeout(chromeTimer);
+  document.body.classList.remove("chrome-suppressed");
+  document.body.classList.add("chrome-visible");
+  if (duration) chromeTimer = setTimeout(() => document.body.classList.remove("chrome-visible"), duration);
+}
+
+function scheduleChromeHide(delay = 700) {
+  clearTimeout(chromeTimer);
+  chromeTimer = setTimeout(() => document.body.classList.remove("chrome-visible"), delay);
+}
+
+function hideChromeSoon(delay = 700) {
+  document.body.classList.add("chrome-suppressed");
+  scheduleChromeHide(delay);
+}
+
+async function getGitHubContent(path, token) {
+  const response = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`, {
+    headers: {
+      "Accept": "application/vnd.github+json",
+      "Authorization": `Bearer ${token}`,
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+  });
+
+  if (!response.ok) {
+    let detail = "";
+    try {
+      const json = await response.json();
+      detail = json.message ? ` ${json.message}` : "";
+    } catch {}
+    throw new Error(`GitHub could not read the update.${detail}`);
+  }
+  return response.json();
+}
+
+async function putGitHubContent(path, base64Content, message, token, sha = "") {
+  const body = {
+    message,
+    content: base64Content,
+    branch: BRANCH,
+  };
+  if (sha) body.sha = sha;
 
   const response = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`, {
     method: "PUT",
@@ -463,11 +1277,7 @@ async function publishBeat(note) {
       "Content-Type": "application/json",
       "X-GitHub-Api-Version": "2022-11-28",
     },
-    body: JSON.stringify({
-      message: `beat: ${author} ${date}`,
-      content: bytesToBase64(markdown),
-      branch: BRANCH,
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
@@ -478,8 +1288,132 @@ async function publishBeat(note) {
     } catch {}
     throw new Error(`GitHub rejected the save.${detail}`);
   }
+}
+
+async function uploadImages(token, beatId, date) {
+  const images = Array.from(editor.querySelectorAll("img")).filter(img => (img.getAttribute("src") || "").startsWith("data:image/"));
+  const assetMap = new Map();
+  let index = 0;
+  for (const img of images) {
+    index += 1;
+    const src = img.getAttribute("src");
+    const filename = `${pad(index)}-${slugFileName(img.dataset.filename)}`;
+    const path = `assets/updates/${beatId}/${filename}`;
+    const base64 = src.slice(src.indexOf(",") + 1);
+    meta.textContent = images.length === 1 ? "Uploading image" : `Uploading image ${index} of ${images.length}`;
+    await putGitHubContent(path, base64, `asset: ${date} ${filename}`, token);
+    assetMap.set(img, path);
+  }
+  return assetMap;
+}
+
+function editedEntry(edit, body, status) {
+  const author = edit.author || safeAuthor();
+  const date = edit.date || localDate();
+  const id = edit.id || `${date}-${author}-${localTime()}`;
+  return {
+    id,
+    path: edit.path || `updates/${id}.md`,
+    author,
+    date,
+    status,
+    markdown: body,
+    html: mdToHtml(body),
+  };
+}
+
+function saveLocalEntryEdit(entry) {
+  const entries = readJson(STORAGE.localEntries, []);
+  const index = entries.findIndex(item => item.id === entry.id);
+  const next = { ...entry, path: entry.path || `local/${entry.id}` };
+  if (index === -1) entries.unshift(next);
+  else entries[index] = { ...entries[index], ...next };
+  writeJson(STORAGE.localEntries, entries.slice(0, 30));
+}
+
+function saveLocalOverride(entry) {
+  const overrides = readJson(STORAGE.localOverrides, []);
+  const key = entry.path || entry.id;
+  const index = overrides.findIndex(item => (item.path || item.id) === key);
+  const next = { ...entry, path: key };
+  if (index === -1) overrides.unshift(next);
+  else overrides[index] = { ...overrides[index], ...next };
+  writeJson(STORAGE.localOverrides, overrides.slice(0, 60));
+}
+
+async function saveEditedBeat(edit) {
+  const token = localStorage.getItem(STORAGE.token);
+  const date = edit.date || localDate();
+  const author = edit.author || safeAuthor();
+  const beatId = edit.id || `${date}-${author}-${localTime()}`;
+  const assetMap = !LOCAL_ONLY && token ? await uploadImages(token, beatId, date) : new Map();
+  const body = editorToMarkdown(assetMap);
+  const status = inferStatus(editorText());
+  const entry = editedEntry({ ...edit, id: beatId, date, author }, body, status);
+  const markdown = buildMarkdown(body, entry.date, status, entry.author);
+
+  if (edit.source === "local") {
+    saveLocalEntryEdit(entry);
+    return { path: entry.path, markdown };
+  }
+
+  if (LOCAL_ONLY) {
+    saveLocalOverride(entry);
+    return { path: entry.path, markdown };
+  }
+
+  if (!token) throw new Error("setup");
+  const path = edit.path || entry.path;
+  const existing = await getGitHubContent(path, token);
+  await putGitHubContent(path, bytesToBase64(markdown), `edit beat: ${entry.author} ${entry.date}`, token, existing.sha);
+  saveLocalOverride({ ...entry, path });
+  return { path, markdown };
+}
+
+async function publishBeat() {
+  if (currentEdit) return saveEditedBeat(currentEdit);
+  if (LOCAL_ONLY) return publishLocalBeat();
+
+  const token = localStorage.getItem(STORAGE.token);
+  if (!token) throw new Error("setup");
+
+  const now = new Date();
+  const author = safeAuthor();
+  const date = localDate(now);
+  const beatId = `${date}-${author}-${localTime(now)}`;
+  const path = `updates/${beatId}.md`;
+  const assetMap = await uploadImages(token, beatId, date);
+  const body = editorToMarkdown(assetMap);
+  const markdown = buildMarkdown(body, date, inferStatus(editorText()), author);
+  await putGitHubContent(path, bytesToBase64(markdown), `beat: ${author} ${date}`, token);
 
   return { path, markdown };
+}
+
+function publishLocalBeat() {
+  const now = new Date();
+  const author = safeAuthor();
+  const date = localDate(now);
+  const beatId = `${date}-${author}-${localTime(now)}`;
+  const body = editorToMarkdown();
+  const status = inferStatus(editorText());
+  const markdown = buildMarkdown(body, date, status, author);
+  const entries = JSON.parse(localStorage.getItem(STORAGE.localEntries) || "[]");
+  entries.unshift({
+    id: beatId,
+    path: `local/${beatId}`,
+    author,
+    date,
+    status,
+    markdown: body,
+    html: mdToHtml(body),
+  });
+  try {
+    localStorage.setItem(STORAGE.localEntries, JSON.stringify(entries.slice(0, 30)));
+  } catch {
+    throw new Error("Local save is too large. Remove one image and try again.");
+  }
+  return { path: "local", markdown };
 }
 
 function openSettings() {
@@ -496,7 +1430,7 @@ saveSettingsButton.addEventListener("click", () => {
   if (tokenInput.value.trim()) localStorage.setItem(STORAGE.token, tokenInput.value.trim());
   settingsDialog.close();
   updateMeta();
-  input.focus();
+  editor.focus();
 });
 
 forgetButton.addEventListener("click", () => {
@@ -505,22 +1439,81 @@ forgetButton.addEventListener("click", () => {
   updateMeta();
 });
 
-input.addEventListener("input", () => {
-  localStorage.setItem(STORAGE.draft, input.value);
-  resizeInput();
+document.addEventListener("selectionchange", rememberSelection);
+
+editor.addEventListener("input", () => {
+  persistDraft();
   updateMeta();
+  updatePreview();
+  hideChromeSoon(900);
 });
 
-window.addEventListener("resize", resizeInput);
+window.addEventListener("pagehide", () => {
+  if (!editorIsEmpty()) persistDraft();
+});
+
+editor.addEventListener("paste", async (event) => {
+  const items = Array.from(event.clipboardData?.items || []);
+  const imageFiles = items.filter(item => item.type.startsWith("image/")).map(item => item.getAsFile()).filter(Boolean);
+  if (!imageFiles.length) return;
+  event.preventDefault();
+  await insertImageFiles(imageFiles);
+  const text = event.clipboardData.getData("text/plain").trim();
+  if (text) insertTextAtCursor(text);
+});
+
+editor.addEventListener("dragover", (event) => {
+  event.preventDefault();
+  editor.classList.add("is-drop-target");
+});
+
+editor.addEventListener("dragleave", () => {
+  editor.classList.remove("is-drop-target");
+});
+
+editor.addEventListener("drop", async (event) => {
+  event.preventDefault();
+  editor.classList.remove("is-drop-target");
+  const files = Array.from(event.dataTransfer?.files || []).filter(file => file.type.startsWith("image/"));
+  await insertImageFiles(files);
+});
+
+imageButton.addEventListener("click", () => {
+  restoreSelection();
+  imageInput.click();
+});
+
+imageInput.addEventListener("change", async () => {
+  await insertImageFiles(Array.from(imageInput.files || []));
+  imageInput.value = "";
+});
+
+linkButton.addEventListener("click", insertLink);
+
+chromeHotspot.addEventListener("pointerenter", () => revealChrome(0));
+chromeHotspot.addEventListener("pointerdown", () => revealChrome(3500));
+chromeHotspot.addEventListener("pointerleave", () => document.body.classList.remove("chrome-suppressed"));
+footerBar.addEventListener("pointerenter", () => revealChrome(0));
+footerBar.addEventListener("pointerleave", () => {
+  document.body.classList.remove("chrome-suppressed");
+  scheduleChromeHide(1200);
+});
+
+sectionButtons.forEach(button => {
+  button.addEventListener("click", () => labelCurrentThought(button.dataset.sectionButton));
+});
+
+previewButton.addEventListener("click", () => setPreview(!showingPreview));
 
 doneButton.addEventListener("click", async () => {
-  const note = normalizeNote(input.value);
-  if (!note) {
-    input.focus();
+  if (showingPreview) setPreview(false);
+
+  if (editorIsEmpty()) {
+    editor.focus();
     return;
   }
 
-  if (!hasToken()) {
+  if (!LOCAL_ONLY && !hasToken()) {
     meta.textContent = "Setup needed";
     openSettings();
     return;
@@ -529,11 +1522,13 @@ doneButton.addEventListener("click", async () => {
   doneButton.disabled = true;
   meta.textContent = "Saving";
   try {
-    await publishBeat(note);
-    input.value = "";
-    localStorage.removeItem(STORAGE.draft);
-    resizeInput();
-    meta.textContent = "Done. Publishing now.";
+    const wasEditing = Boolean(currentEdit);
+    await publishBeat();
+    editor.innerHTML = "";
+    await clearDraftRecord();
+    localStorage.removeItem(STORAGE.editing);
+    currentEdit = null;
+    meta.textContent = wasEditing ? LOCAL_ONLY ? "Saved edit locally." : "Update saved." : LOCAL_ONLY ? "Saved locally." : "Done. Publishing now.";
   } catch (error) {
     if (error.message === "setup") {
       meta.textContent = "Setup needed";
@@ -546,10 +1541,25 @@ doneButton.addEventListener("click", async () => {
   }
 });
 
-input.value = localStorage.getItem(STORAGE.draft) || "";
-footerDate.textContent = displayDate();
-resizeInput();
-updateMeta();
+async function loadInitialContent() {
+  currentEdit = readJson(STORAGE.editing, null);
+  const savedDraft = await loadDraftRecord();
+  const draft = savedDraft && contextMatchesCurrent(savedDraft.context) ? savedDraft.html : "";
+  if (currentEdit) {
+    editor.innerHTML = draft || currentEdit.html || mdToHtml(currentEdit.markdown || "");
+    if (!draft) persistDraft();
+    return;
+  }
+
+  editor.innerHTML = draft;
+  cleanLoadedDraft();
+}
+
+loadInitialContent().then(() => {
+  footerDate.textContent = displayDate();
+  updateMeta();
+  setTimeout(() => editor.focus(), 0);
+});
 </script>
 </body>
 </html>

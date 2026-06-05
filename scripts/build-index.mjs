@@ -29,23 +29,68 @@ function parse(raw) {
 function esc(s) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
+function attr(s) {
+  return esc(s).replace(/"/g, "&quot;");
+}
+function safeUrl(raw) {
+  const url = raw.trim();
+  return /^(https?:|mailto:|#|\/|\.\/|\.\.\/|assets\/|[a-z0-9._~/-]+(?:[?#][^\s]*)?$)/i.test(url) ? attr(url) : "#";
+}
+function sectionKey(s) {
+  const key = s.trim().toLowerCase();
+  return ["green", "concerns", "red flags", "point of view"].includes(key) ? key : "";
+}
 function inline(s) {
-  return esc(s)
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
-    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
-    .replace(/`([^`]+)`/g, "<code>$1</code>");
+  const tokens = [];
+  const stash = (html) => {
+    tokens.push(html);
+    return `\u0000${tokens.length - 1}\u0000`;
+  };
+
+  let html = esc(s);
+  html = html.replace(/`([^`]+)`/g, (_, code) => stash(`<code>${code}</code>`));
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text, url) => {
+    const label = text.trim() || url.trim();
+    return stash(`<a href="${safeUrl(url)}" target="_blank" rel="noopener">${inline(label)}</a>`);
+  });
+  html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/(^|[\s(])((?:https?:\/\/)[^\s<)]+)/g, (_, lead, url) => {
+    const clean = url.replace(/[.,;:!?]+$/, "");
+    const tail = url.slice(clean.length);
+    return `${lead}${stash(`<a href="${safeUrl(clean)}" target="_blank" rel="noopener">${attr(clean)}</a>`)}${tail}`;
+  });
+  return html.replace(/\u0000(\d+)\u0000/g, (_, i) => tokens[Number(i)] || "");
 }
 function mdToHtml(md) {
   const out = [];
-  let list = null; // current <ul> buffer
+  let list = null;
+  let quote = null;
   const flush = () => {
     if (list) { out.push("<ul>" + list.join("") + "</ul>"); list = null; }
+    if (quote) { out.push("<blockquote>" + quote.join("") + "</blockquote>"); quote = null; }
   };
   for (const line of md.split("\n")) {
     const t = line.trim();
     if (!t) { flush(); continue; }
-    if (t.startsWith("## ")) { flush(); out.push(`<h3>${inline(t.slice(3))}</h3>`); continue; }
+    const image = t.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    if (image) {
+      flush();
+      const caption = image[1].trim();
+      out.push(`<figure><img src="${safeUrl(image[2])}" alt="${attr(caption)}" loading="lazy">${caption ? `<figcaption>${inline(caption)}</figcaption>` : ""}</figure>`);
+      continue;
+    }
+    if (/^-{3,}$/.test(t)) { flush(); out.push("<hr>"); continue; }
+    if (t.startsWith("# ")) { flush(); out.push(`<h2>${inline(t.slice(2))}</h2>`); continue; }
+    if (t.startsWith("## ")) {
+      flush();
+      const label = t.slice(3).trim();
+      const key = sectionKey(label);
+      out.push(key ? `<h3 class="section-label" data-section="${attr(key)}">${inline(label)}</h3>` : `<h3>${inline(label)}</h3>`);
+      continue;
+    }
+    if (t.startsWith("### ")) { flush(); out.push(`<h4>${inline(t.slice(4))}</h4>`); continue; }
     if (t.startsWith("- ")) { (list ||= []).push(`<li>${inline(t.slice(2))}</li>`); continue; }
+    if (t.startsWith("> ")) { (quote ||= []).push(`<p>${inline(t.slice(2))}</p>`); continue; }
     flush(); out.push(`<p>${inline(t)}</p>`);
   }
   flush();
@@ -79,11 +124,13 @@ const entries = files.map((f) => {
   const status = (meta.status || "green").toLowerCase();
   return {
     id: basename(f, ".md"),
+    path: `updates/${f}`,
     author: (meta.author || "someone").toLowerCase(),
     date: meta.date || basename(f, ".md").slice(0, 10),
     status: ["green", "concern", "red"].includes(status) ? status : "green",
     hasConcerns: hasContent(sec["concerns"]),
     hasRedFlags: hasContent(sec["red flags"]),
+    markdown: body,
     html: mdToHtml(body),
   };
 });
@@ -93,6 +140,6 @@ entries.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.id < b.id
 mkdirSync(outDir, { recursive: true });
 writeFileSync(
   join(outDir, "index.json"),
-  JSON.stringify({ generated: new Date().toISOString(), entries }, null, 2)
+  JSON.stringify({ generated: new Date().toISOString(), entries }, null, 2) + "\n"
 );
 console.log(`build-index: ${entries.length} beat(s) -> data/index.json`);

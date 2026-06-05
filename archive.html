@@ -32,6 +32,7 @@
     line-height: 1.62;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    overflow-x: hidden;
   }
 
   button,
@@ -65,11 +66,11 @@
   }
 
   .archive {
-    max-width: 900px;
+    width: min(900px, 100%);
   }
 
   .beat {
-    padding: 34px 0;
+    padding: 44px 0;
     border-top: 1px solid var(--line);
   }
 
@@ -79,52 +80,104 @@
   }
 
   .beat-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 24px;
-    margin-bottom: 22px;
-  }
-
-  .beat-title {
-    display: block;
-    color: var(--ink);
-    font-size: 22px;
-    font-weight: 650;
-    line-height: 1.25;
-  }
-
-  .beat-date,
-  .beat-status {
-    color: var(--muted);
-    font-size: 14px;
-    line-height: 1.4;
+    position: relative;
+    margin-bottom: 26px;
+    padding-right: 132px;
   }
 
   .beat-date {
     display: block;
-    margin-top: 3px;
+    color: var(--ink);
+    font-size: 34px;
+    font-weight: 650;
+    line-height: 1.15;
   }
 
-  .beat-status {
-    flex: none;
-    white-space: nowrap;
+  .beat-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    gap: 6px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .35s ease;
+  }
+
+  .beat:hover .beat-actions,
+  .beat:focus-within .beat-actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .action-button {
+    min-height: 30px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--muted);
+    padding: 0 8px;
+    font: inherit;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .action-button:hover {
+    background: var(--soft);
+    color: var(--ink);
   }
 
   .beat-body {
+    width: 100%;
     max-width: 76ch;
+    overflow-wrap: anywhere;
+  }
+
+  .beat-body h2 {
+    margin: 0 0 18px;
+    color: var(--ink);
+    font-size: 24px;
+    font-weight: 650;
+    line-height: 1.25;
   }
 
   .beat-body h3 {
-    margin: 28px 0 8px;
+    margin: 34px 0 10px;
     color: var(--ink);
-    font-size: 17px;
+    font-size: 18px;
     font-weight: 650;
     line-height: 1.35;
   }
 
   .beat-body h3:first-child {
     margin-top: 0;
+  }
+
+  .beat-body h3.section-label {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    margin: 34px 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink);
+    padding: 0 9px;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1;
+  }
+
+  .beat-body h3.section-label:first-child {
+    margin-top: 0;
+  }
+
+  .beat-body h4 {
+    margin: 22px 0 8px;
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 650;
+    line-height: 1.35;
   }
 
   .beat-body p {
@@ -143,6 +196,45 @@
 
   .beat-body strong {
     font-weight: 650;
+  }
+
+  .beat-body blockquote {
+    margin: 20px 0;
+    padding: 0 0 0 18px;
+    border-left: 2px solid var(--line);
+    color: var(--muted);
+  }
+
+  .beat-body blockquote p {
+    margin-bottom: 10px;
+  }
+
+  .beat-body figure {
+    margin: 24px 0 26px;
+  }
+
+  .beat-body img {
+    display: block;
+    width: 100%;
+    max-width: 920px;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--soft);
+  }
+
+  .beat-body figcaption {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .beat-body hr {
+    height: 1px;
+    border: 0;
+    background: var(--line);
+    margin: 28px 0;
   }
 
   code {
@@ -200,7 +292,35 @@
 
   @media (max-width: 640px) {
     main {
+      width: 100vw;
+      max-width: 100vw;
       padding: 34px 18px 118px;
+      overflow-x: hidden;
+    }
+
+    .archive,
+    .beat,
+    .beat-body {
+      inline-size: calc(100vw - 36px);
+      max-inline-size: calc(100vw - 36px);
+    }
+
+    .beat-body p,
+    .beat-body blockquote,
+    .beat-body figcaption {
+      max-inline-size: 31ch;
+      white-space: normal;
+    }
+
+    .beat-body ul {
+      max-inline-size: 30ch;
+      white-space: normal;
+    }
+
+    .beat-body figure {
+      inline-size: 100%;
+      max-inline-size: 100%;
+      white-space: normal;
     }
 
     .page-title {
@@ -208,14 +328,28 @@
       font-size: 28px;
     }
 
-    .beat-head {
-      display: block;
+    .beat {
+      padding: 38px 0;
     }
 
-    .beat-status {
-      display: block;
-      margin-top: 8px;
-      white-space: normal;
+    .beat-head {
+      padding-right: 0;
+    }
+
+    .beat-date {
+      font-size: 30px;
+    }
+
+    .beat-actions {
+      position: static;
+      margin-top: 10px;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .action-button {
+      min-height: 32px;
+      padding: 0 8px 0 0;
     }
 
     .footer-bar {
@@ -236,53 +370,215 @@
   </footer>
 
 <script>
+const OWNER = "amitdialpad";
+const REPO = "heartbeats";
+const BRANCH = "main";
 const archive = document.getElementById("archive");
-const NAMES = { amit: "Amit", josh: "Josh" };
-
-function cap(s) {
-  return NAMES[s] || (s ? s[0].toUpperCase() + s.slice(1) : "");
-}
+const STORAGE = {
+  token: "heartbeats.githubToken",
+  draft: "heartbeats.draft",
+  draftContext: "heartbeats.draftContext",
+  editing: "heartbeats.editing",
+  localEntries: "heartbeats.localEntries",
+  localOverrides: "heartbeats.localOverrides",
+  hiddenEntries: "heartbeats.hiddenEntries",
+};
+const LOCAL_ONLY = ["localhost", "127.0.0.1", ""].includes(location.hostname);
+let currentEntries = [];
 
 function displayDate(d) {
   const dt = new Date(d + "T00:00:00");
   return isNaN(dt) ? d : dt.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
 }
 
-function statusLabel(s) {
-  if (s === "red") return "Red flag";
-  if (s === "concern") return "Concern";
-  return "Fine";
+function esc(s) {
+  return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function attr(s) {
+  return esc(s).replace(/"/g, "&quot;");
+}
+
+function readJson(key, fallback) {
+  try {
+    return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJson(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function entryKey(entry) {
+  return entry.path || entry.id;
 }
 
 function render(entries) {
+  currentEntries = entries;
   if (!entries.length) {
     archive.innerHTML = '<p class="empty">No past updates yet.</p>';
     return;
   }
 
   archive.innerHTML = entries.map(entry => `
-    <article class="beat">
+    <article class="beat" data-entry-id="${attr(entry.id)}">
       <div class="beat-head">
-        <div>
-          <span class="beat-title">${cap(entry.author)}</span>
-          <time class="beat-date" datetime="${entry.date}">${displayDate(entry.date)}</time>
+        <time class="beat-date" datetime="${entry.date}">${displayDate(entry.date)}</time>
+        <div class="beat-actions" aria-label="Update actions">
+          <button class="action-button" type="button" data-action="edit" data-entry-id="${attr(entry.id)}">Edit</button>
+          <button class="action-button" type="button" data-action="delete" data-entry-id="${attr(entry.id)}">Delete</button>
         </div>
-        <span class="beat-status">${statusLabel(entry.status)}</span>
       </div>
       <div class="beat-body">${entry.html}</div>
     </article>
   `).join("");
 }
 
+function readLocalEntries() {
+  return readJson(STORAGE.localEntries, []).map(entry => ({ ...entry, source: "local" }));
+}
+
+function readLocalOverrides() {
+  return readJson(STORAGE.localOverrides, []).map(entry => ({ ...entry, source: "override" }));
+}
+
+function readHiddenEntries() {
+  return new Set(readJson(STORAGE.hiddenEntries, []));
+}
+
+function hideEntry(entry) {
+  const hidden = readJson(STORAGE.hiddenEntries, []);
+  const key = entryKey(entry);
+  if (!hidden.includes(key)) hidden.push(key);
+  writeJson(STORAGE.hiddenEntries, hidden);
+}
+
+function removeLocalEntry(entry) {
+  writeJson(STORAGE.localEntries, readJson(STORAGE.localEntries, []).filter(item => item.id !== entry.id));
+}
+
+function removeLocalOverride(entry) {
+  const key = entryKey(entry);
+  writeJson(STORAGE.localOverrides, readJson(STORAGE.localOverrides, []).filter(item => entryKey(item) !== key));
+}
+
+function mergeEntries(indexedEntries) {
+  const hidden = readHiddenEntries();
+  const overrides = new Map(readLocalOverrides().map(entry => [entryKey(entry), entry]));
+  const entries = [];
+
+  for (const entry of indexedEntries) {
+    const key = entryKey(entry);
+    if (hidden.has(key)) continue;
+    const override = overrides.get(key);
+    entries.push({ ...entry, ...(override || {}), source: override ? "override" : "indexed" });
+  }
+
+  for (const entry of readLocalEntries()) {
+    if (!hidden.has(entryKey(entry))) entries.push(entry);
+  }
+
+  return entries;
+}
+
+function sortEntries(entries) {
+  return entries.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.id < b.id ? 1 : -1));
+}
+
+async function getGitHubContent(path, token) {
+  const response = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`, {
+    headers: {
+      "Accept": "application/vnd.github+json",
+      "Authorization": `Bearer ${token}`,
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+  });
+  if (!response.ok) throw new Error("Could not read the GitHub file.");
+  return response.json();
+}
+
+async function deleteGitHubContent(entry) {
+  const token = localStorage.getItem(STORAGE.token);
+  if (!token) throw new Error("Setup needed. Save your GitHub token in the writer first.");
+  if (!entry.path) throw new Error("This update does not have a repo path.");
+  const existing = await getGitHubContent(entry.path, token);
+  const response = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${entry.path}`, {
+    method: "DELETE",
+    headers: {
+      "Accept": "application/vnd.github+json",
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json",
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+    body: JSON.stringify({
+      message: `delete beat: ${entry.date}`,
+      sha: existing.sha,
+      branch: BRANCH,
+    }),
+  });
+  if (!response.ok) throw new Error("GitHub rejected the delete.");
+}
+
+function beginEdit(entry) {
+  const existingDraft = localStorage.getItem(STORAGE.draft) || "";
+  if (existingDraft.trim() && !window.confirm("Replace the current draft with this past update?")) return;
+  localStorage.setItem(STORAGE.editing, JSON.stringify({
+    id: entry.id,
+    path: entry.path || "",
+    source: entry.source,
+    author: entry.author,
+    date: entry.date,
+    status: entry.status,
+    markdown: entry.markdown || "",
+    html: entry.html || "",
+  }));
+  localStorage.removeItem(STORAGE.draft);
+  localStorage.removeItem(STORAGE.draftContext);
+  location.href = `./?edit=${encodeURIComponent(entry.id)}`;
+}
+
+async function deleteEntry(entry) {
+  if (!window.confirm(`Delete ${displayDate(entry.date)}?`)) return;
+
+  try {
+    if (entry.source === "local") {
+      removeLocalEntry(entry);
+    } else {
+      if (!LOCAL_ONLY) await deleteGitHubContent(entry);
+      removeLocalOverride(entry);
+      hideEntry(entry);
+    }
+    await loadArchive();
+  } catch (error) {
+    window.alert(error.message || "Could not delete this update.");
+  }
+}
+
 async function loadArchive() {
   try {
     const response = await fetch("./data/index.json", { cache: "no-store" });
     const data = await response.json();
-    render(data.entries || []);
+    render(sortEntries(mergeEntries(data.entries || [])));
   } catch {
-    archive.innerHTML = '<p class="empty">Could not load past updates.</p>';
+    const local = readLocalEntries();
+    if (local.length) {
+      render(sortEntries(local));
+    } else {
+      archive.innerHTML = '<p class="empty">Could not load past updates.</p>';
+    }
   }
 }
+
+archive.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-action]");
+  if (!button) return;
+  const entry = currentEntries.find(item => item.id === button.dataset.entryId);
+  if (!entry) return;
+  if (button.dataset.action === "edit") beginEdit(entry);
+  if (button.dataset.action === "delete") await deleteEntry(entry);
+});
 
 loadArchive();
 </script>
