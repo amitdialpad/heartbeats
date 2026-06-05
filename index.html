@@ -12,9 +12,7 @@
     --quiet: #8a8a8a;
     --line: #e6e6e6;
     --soft: #f7f7f7;
-    --soft-hover: #f0f0f0;
     --focus: #111;
-    --measure: 760px;
   }
 
   * {
@@ -62,38 +60,6 @@
     outline-offset: 3px;
   }
 
-  .topbar {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    background: var(--page);
-    border-bottom: 1px solid var(--line);
-  }
-
-  .topbar-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 18px;
-    max-width: calc(var(--measure) + 80px);
-    margin: 0 auto;
-    padding: 13px 24px;
-  }
-
-  .brand {
-    color: var(--ink);
-    font-size: 15px;
-    font-weight: 650;
-    line-height: 1.2;
-    text-decoration: none;
-  }
-
-  .top-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
   .plain-button {
     min-height: 38px;
     border: 0;
@@ -110,44 +76,27 @@
   }
 
   main {
-    max-width: var(--measure);
-    margin: 0 auto;
-    padding: 58px 24px 96px;
-  }
-
-  .date-line {
-    margin: 0 0 12px;
-    color: var(--quiet);
-    font-size: 15px;
-    line-height: 1.4;
-  }
-
-  h1 {
-    margin: 0 0 28px;
-    color: var(--ink);
-    font-size: 42px;
-    font-weight: 650;
-    letter-spacing: 0;
-    line-height: 1.14;
-    text-wrap: balance;
+    width: 100%;
+    min-height: 100vh;
+    padding: 54px clamp(24px, 5.8vw, 96px) 112px;
   }
 
   .writer {
-    min-height: 56vh;
+    min-height: calc(100vh - 166px);
   }
 
   .beat-input {
     display: block;
     width: 100%;
-    min-height: 48vh;
+    min-height: calc(100vh - 166px);
     resize: none;
     overflow: hidden;
     border: 0;
     background: transparent;
     color: var(--ink);
     padding: 0;
-    font-size: 21px;
-    line-height: 1.65;
+    font-size: 32px;
+    line-height: 1.58;
   }
 
   .beat-input::placeholder {
@@ -159,17 +108,33 @@
     outline: 0;
   }
 
-  .compose-bar {
-    position: sticky;
+  .footer-bar {
+    position: fixed;
     bottom: 0;
-    display: flex;
+    left: 0;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin: 52px 0 0;
-    padding: 16px 0;
+    gap: 8px 20px;
+    width: 100%;
+    padding: 14px clamp(18px, 3vw, 34px);
     background: var(--page);
     border-top: 1px solid var(--line);
+  }
+
+  .project-access {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .project {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.2;
+    text-decoration: none;
   }
 
   .meta {
@@ -177,6 +142,7 @@
     color: var(--quiet);
     font-size: 14px;
     line-height: 1.4;
+    text-align: right;
   }
 
   .done-button {
@@ -204,98 +170,6 @@
     cursor: default;
   }
 
-  .recent {
-    margin-top: 72px;
-    padding-top: 30px;
-    border-top: 1px solid var(--line);
-  }
-
-  .recent h2 {
-    margin: 0 0 24px;
-    color: var(--muted);
-    font-size: 15px;
-    font-weight: 650;
-    line-height: 1.4;
-  }
-
-  .beat {
-    padding: 32px 0;
-    border-top: 1px solid var(--line);
-  }
-
-  .beat:first-of-type {
-    border-top: 0;
-    padding-top: 0;
-  }
-
-  .beat-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 18px;
-    margin-bottom: 22px;
-  }
-
-  .author {
-    display: block;
-    color: var(--ink);
-    font-size: 22px;
-    font-weight: 650;
-    line-height: 1.25;
-  }
-
-  .when,
-  .status {
-    color: var(--muted);
-    font-size: 14px;
-    line-height: 1.4;
-  }
-
-  .when {
-    display: block;
-    margin-top: 3px;
-  }
-
-  .status {
-    flex: none;
-    white-space: nowrap;
-  }
-
-  .beat-body {
-    max-width: 66ch;
-  }
-
-  .beat-body h3 {
-    margin: 28px 0 8px;
-    color: var(--ink);
-    font-size: 17px;
-    font-weight: 650;
-    line-height: 1.35;
-  }
-
-  .beat-body h3:first-child {
-    margin-top: 0;
-  }
-
-  .beat-body p {
-    margin: 0 0 14px;
-    text-wrap: pretty;
-  }
-
-  .beat-body ul {
-    margin: 0 0 18px;
-    padding-left: 1.25em;
-  }
-
-  .beat-body li {
-    margin: 0 0 10px;
-    padding-left: .1em;
-  }
-
-  .beat-body strong {
-    font-weight: 650;
-  }
-
   code {
     border-radius: 4px;
     background: var(--soft);
@@ -303,12 +177,6 @@
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
     font-size: .86em;
     padding: 2px 5px;
-  }
-
-  .empty {
-    margin: 0;
-    color: var(--muted);
-    font-size: 17px;
   }
 
   dialog {
@@ -372,65 +240,62 @@
   }
 
   @media (max-width: 640px) {
-    .topbar-inner {
-      padding: 12px 18px;
-    }
-
     main {
-      padding: 42px 18px 72px;
-    }
-
-    h1 {
-      font-size: 34px;
+      padding: 34px 18px 142px;
     }
 
     .beat-input {
-      min-height: 50vh;
-      font-size: 20px;
+      min-height: calc(100vh - 176px);
+      font-size: 27px;
+      line-height: 1.55;
     }
 
-    .compose-bar {
-      margin-top: 42px;
+    .footer-bar {
+      grid-template-columns: 1fr auto;
+      gap: 8px 12px;
+      padding: 11px 12px;
     }
 
-    .beat-head {
-      display: block;
+    .project-access {
+      gap: 4px;
     }
 
-    .status {
-      display: block;
-      margin-top: 8px;
-      white-space: normal;
+    .plain-button {
+      padding: 0 8px;
+    }
+
+    .meta {
+      grid-column: 1 / -1;
+      width: 100%;
+      min-height: 18px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: left;
+    }
+
+    .done-button {
+      min-width: 74px;
+      padding: 0 14px;
     }
   }
 </style>
 </head>
 <body>
-  <nav class="topbar" aria-label="Primary">
-    <div class="topbar-inner">
-      <a class="brand" href="https://amitdialpad.github.io/heartbeats/">Heartbeats</a>
-      <div class="top-actions">
-        <button class="plain-button" id="settingsButton" type="button">Setup</button>
-      </div>
-    </div>
-  </nav>
-
   <main>
     <section class="writer" aria-label="Write today's beat">
-      <p class="date-line" id="todayLine"></p>
-      <h1>Today</h1>
       <textarea class="beat-input" id="beatInput" spellcheck="true" placeholder="Write clean text."></textarea>
-      <div class="compose-bar">
-        <div class="meta" id="meta"></div>
-        <button class="done-button" id="doneButton" type="button">Done</button>
-      </div>
-    </section>
-
-    <section class="recent" aria-label="Recent beats">
-      <h2>Recent</h2>
-      <div id="feed"></div>
     </section>
   </main>
+
+  <footer class="footer-bar">
+    <div class="project-access">
+      <a class="project" href="https://amitdialpad.github.io/heartbeats/">Heartbeats</a>
+      <button class="plain-button" id="settingsButton" type="button">Setup</button>
+    </div>
+    <div class="meta" id="meta"></div>
+    <button class="done-button" id="doneButton" type="button">Done</button>
+  </footer>
 
   <dialog id="settingsDialog">
     <form class="settings" method="dialog">
@@ -461,13 +326,10 @@ const STORAGE = {
   author: "heartbeats.author",
   draft: "heartbeats.draft",
 };
-const NAMES = { amit: "Amit", josh: "Josh" };
 
 const input = document.getElementById("beatInput");
 const doneButton = document.getElementById("doneButton");
 const meta = document.getElementById("meta");
-const todayLine = document.getElementById("todayLine");
-const feed = document.getElementById("feed");
 const settingsDialog = document.getElementById("settingsDialog");
 const settingsButton = document.getElementById("settingsButton");
 const authorInput = document.getElementById("authorInput");
@@ -487,28 +349,13 @@ function localTime(d = new Date()) {
   return `${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
 }
 
-function cap(s) {
-  return NAMES[s] || (s ? s[0].toUpperCase() + s.slice(1) : "");
-}
-
-function fmtDate(d) {
-  const dt = new Date(d + "T00:00:00");
-  return isNaN(dt) ? d : dt.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-}
-
-function statusLabel(s) {
-  if (s === "red") return "Red flag";
-  if (s === "concern") return "Concern";
-  return "Fine";
-}
-
 function wordCount(text) {
   return (text.trim().match(/\S+/g) || []).length;
 }
 
 function resizeInput() {
   input.style.height = "auto";
-  input.style.height = Math.max(input.scrollHeight, window.innerHeight * 0.48) + "px";
+  input.style.height = Math.max(input.scrollHeight, window.innerHeight - 166) + "px";
 }
 
 function updateMeta() {
@@ -622,36 +469,6 @@ async function publishBeat(note) {
   return { path, markdown };
 }
 
-function renderFeed(entries) {
-  const list = entries.slice(0, 5);
-  if (!list.length) {
-    feed.innerHTML = '<p class="empty">No beats yet.</p>';
-    return;
-  }
-
-  feed.innerHTML = list.map(e => `
-    <article class="beat">
-      <div class="beat-head">
-        <div>
-          <span class="author">${cap(e.author)}</span>
-          <span class="when">${fmtDate(e.date)}</span>
-        </div>
-        <span class="status">${statusLabel(e.status)}</span>
-      </div>
-      <div class="beat-body">${e.html}</div>
-    </article>`).join("");
-}
-
-async function loadFeed() {
-  try {
-    const response = await fetch("./data/index.json", { cache: "no-store" });
-    const data = await response.json();
-    renderFeed(data.entries || []);
-  } catch {
-    feed.innerHTML = '<p class="empty">Could not load recent beats.</p>';
-  }
-}
-
 function openSettings() {
   authorInput.value = localStorage.getItem(STORAGE.author) || "amit";
   tokenInput.value = localStorage.getItem(STORAGE.token) || "";
@@ -681,6 +498,8 @@ input.addEventListener("input", () => {
   updateMeta();
 });
 
+window.addEventListener("resize", resizeInput);
+
 doneButton.addEventListener("click", async () => {
   const note = normalizeNote(input.value);
   if (!note) {
@@ -702,7 +521,6 @@ doneButton.addEventListener("click", async () => {
     localStorage.removeItem(STORAGE.draft);
     resizeInput();
     meta.textContent = "Done. Publishing now.";
-    setTimeout(loadFeed, 3500);
   } catch (error) {
     if (error.message === "setup") {
       meta.textContent = "Setup needed";
@@ -715,11 +533,9 @@ doneButton.addEventListener("click", async () => {
   }
 });
 
-todayLine.textContent = fmtDate(localDate());
 input.value = localStorage.getItem(STORAGE.draft) || "";
 resizeInput();
 updateMeta();
-loadFeed();
 </script>
 </body>
 </html>
