@@ -33,6 +33,17 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
+    transition: background .2s ease, color .2s ease;
+  }
+
+  body.is-reading {
+    --page: #101010;
+    --ink: #f4f4f4;
+    --muted: #b8b8b8;
+    --quiet: #8c8c8c;
+    --line: #303030;
+    --soft: #1a1a1a;
+    --focus: #fff;
   }
 
   button,
@@ -103,8 +114,8 @@
   .preview-body {
     width: 100%;
     color: var(--ink);
-    font-size: 32px;
-    line-height: 1.58;
+    font-size: 28px;
+    line-height: 1.56;
   }
 
   .editor:empty::before,
@@ -160,12 +171,20 @@
     line-height: 1.2;
   }
 
+  .preview-body h2 {
+    font-size: 30px;
+  }
+
   .editor h3,
   .preview-body h3 {
     margin: 28px 0 10px;
     font-size: 22px;
     font-weight: 650;
     line-height: 1.3;
+  }
+
+  .preview-body h3 {
+    font-size: 19px;
   }
 
   .editor h3[data-section],
@@ -189,6 +208,10 @@
     font-size: 16px;
     font-weight: 650;
     line-height: 1.35;
+  }
+
+  .preview-body h4 {
+    font-size: 15px;
   }
 
   .editor ul,
@@ -217,14 +240,32 @@
 
   .editor figure,
   .preview-body figure {
+    position: relative;
+    width: min(100%, 980px);
+    max-width: 100%;
     margin: 26px 0 30px;
+  }
+
+  .editor figure[data-image-size="small"],
+  .preview-body figure[data-image-size="small"] {
+    width: min(420px, 100%);
+  }
+
+  .editor figure[data-image-size="medium"],
+  .preview-body figure[data-image-size="medium"] {
+    width: min(640px, 100%);
+  }
+
+  .editor figure[data-image-size="large"],
+  .preview-body figure[data-image-size="large"] {
+    width: min(820px, 100%);
   }
 
   .editor img,
   .preview-body img {
     display: block;
     width: 100%;
-    max-width: 980px;
+    max-width: 100%;
     height: auto;
     border: 1px solid var(--line);
     border-radius: 6px;
@@ -237,6 +278,49 @@
     color: var(--muted);
     font-size: 15px;
     line-height: 1.45;
+  }
+
+  .image-controls {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 2px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--page);
+    padding: 3px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+  }
+
+  .editor figure:hover .image-controls,
+  .editor figure:focus-within .image-controls {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .image-controls button {
+    min-width: 28px;
+    min-height: 26px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--ink);
+    padding: 0 6px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1;
+  }
+
+  .image-controls button:hover {
+    background: var(--soft);
+  }
+
+  .preview-body .image-controls {
+    display: none;
   }
 
   .editor.is-drop-target {
@@ -306,6 +390,13 @@
     line-height: 1.35;
   }
 
+  .preview-meta {
+    margin: 0 0 24px;
+    color: var(--quiet);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
   .empty {
     margin: 0;
     color: var(--muted);
@@ -339,9 +430,9 @@
     left: 0;
     z-index: 2;
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: minmax(120px, auto) minmax(0, 1fr) auto;
     align-items: center;
-    gap: 8px 20px;
+    gap: 12px;
     width: 100%;
     padding: 14px clamp(18px, 3vw, 34px);
     background: var(--page);
@@ -367,15 +458,23 @@
     transform: translateY(18px);
   }
 
-  .project-access {
+  .footer-left,
+  .footer-actions {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
     min-width: 0;
   }
 
-  .project {
+  .footer-left {
+    gap: 8px;
+  }
+
+  .footer-actions {
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .footer-date {
     color: var(--ink);
     font-size: 14px;
     font-weight: 650;
@@ -383,26 +482,119 @@
     text-decoration: none;
   }
 
-  .section-button {
+  .status-chip {
     min-height: 24px;
+    display: inline-flex;
+    align-items: center;
     border: 1px solid var(--line);
     border-radius: 999px;
-    color: var(--ink);
+    color: var(--muted);
     padding: 0 9px;
     font-size: 12px;
     font-weight: 650;
+    line-height: 1;
   }
 
-  .section-button:hover {
+  .status-chip:hover {
+    background: var(--soft);
+    color: var(--ink);
+  }
+
+  .menu-popover,
+  .selection-toolbar {
+    position: fixed;
+    z-index: 5;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--page);
+    box-shadow: 0 8px 28px rgb(0 0 0 / .08);
+  }
+
+  .menu-popover {
+    bottom: 68px;
+    left: clamp(18px, 3vw, 34px);
+    width: min(300px, calc(100vw - 36px));
+    max-height: min(640px, calc(100vh - 92px));
+    overflow: auto;
+    padding: 8px;
+  }
+
+  .menu-popover button,
+  .selection-toolbar button {
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .menu-popover button {
+    width: 100%;
+    min-height: 32px;
+    display: block;
+    border-radius: 6px;
+    padding: 0 8px;
+    font-size: 13px;
+    line-height: 1;
+    text-align: left;
+  }
+
+  .menu-section + .menu-section {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+  }
+
+  .menu-label {
+    margin: 0 0 4px;
+    color: var(--quiet);
+    padding: 0 8px;
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1.4;
+    text-transform: uppercase;
+  }
+
+  .mobile-menu-item {
+    display: none !important;
+  }
+
+  .mobile-menu-item + .menu-section {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .menu-popover button:hover,
+  .selection-toolbar button:hover {
     background: var(--soft);
   }
 
-  .meta {
+  .selection-toolbar {
+    display: flex;
+    gap: 2px;
+    padding: 4px;
+  }
+
+  .selection-toolbar button {
+    min-width: 30px;
+    min-height: 28px;
+    border-radius: 5px;
+    padding: 0 7px;
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1;
+  }
+
+  .footer-status {
     min-height: 22px;
     color: var(--quiet);
     font-size: 14px;
     line-height: 1.4;
     text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .done-button {
@@ -499,68 +691,110 @@
     margin-top: 22px;
   }
 
+  .link-settings {
+    padding: 18px;
+  }
+
+  .link-settings h2 {
+    margin: 0 0 12px;
+    font-size: 18px;
+    line-height: 1.25;
+  }
+
   @media (max-width: 640px) {
     main {
       padding: 34px 18px 230px;
     }
 
-    .editor,
-    .preview-body {
+    .editor {
       min-height: calc(100vh - 264px);
       font-size: 27px;
       line-height: 1.55;
     }
 
-    .editor h2,
-    .preview-body h2 {
+    .preview-body {
+      min-height: calc(100vh - 264px);
+      font-size: 24px;
+      line-height: 1.55;
+    }
+
+    .editor h2 {
       font-size: 29px;
     }
 
-    .editor h3,
-    .preview-body h3 {
+    .preview-body h2 {
+      font-size: 26px;
+    }
+
+    .editor h3 {
       font-size: 21px;
     }
 
+    .preview-body h3 {
+      font-size: 18px;
+    }
+
     .footer-bar {
-      grid-template-columns: 1fr;
-      gap: 8px 12px;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 8px;
       padding: 11px 12px;
     }
 
-    .project-access {
-      width: 100%;
-      gap: 4px 8px;
-    }
-
-    .project {
-      flex-basis: 100%;
+    .footer-left,
+    .footer-actions {
+      gap: 6px;
     }
 
     .plain-button {
       min-height: 34px;
-      padding: 0 5px;
+      padding: 0 7px;
       font-size: 13px;
     }
 
-    .section-button {
-      min-height: 28px;
+    .status-chip {
       padding: 0 7px;
-      font-size: 12px;
     }
 
-    .meta {
-      width: 100%;
+    .footer-status {
       min-height: 18px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      text-align: left;
+      font-size: 13px;
+      text-align: right;
     }
 
     .done-button {
-      width: 100%;
       min-width: 74px;
       padding: 0 14px;
+    }
+  }
+
+  @media (max-width: 430px) {
+    .footer-bar {
+      gap: 6px;
+    }
+
+    .footer-date {
+      max-width: 42px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #previewButton {
+      display: none;
+    }
+
+    .mobile-menu-item {
+      display: block !important;
+    }
+
+    .mobile-menu-item + .menu-section {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--line);
+    }
+
+    .done-button {
+      min-width: 64px;
     }
   }
 </style>
@@ -571,6 +805,7 @@
       <div class="editor" id="editor" contenteditable="true" spellcheck="true" data-placeholder="Start writing"></div>
       <section class="preview-panel" id="previewPanel" hidden aria-label="Preview">
         <p class="preview-title">Preview</p>
+        <div class="preview-meta" id="previewMeta"></div>
         <div class="preview-body" id="previewBody"></div>
       </section>
     </section>
@@ -578,21 +813,53 @@
 
   <div class="chrome-hotspot" id="chromeHotspot" aria-hidden="true"></div>
   <footer class="footer-bar">
-    <div class="project-access">
-      <a class="project" id="footerDate" href="https://amitdialpad.github.io/heartbeats/"></a>
-      <a class="plain-button" href="./archive.html">Past updates</a>
-      <button class="plain-button" id="imageButton" type="button">Image</button>
-      <button class="plain-button" id="linkButton" type="button">Link</button>
-      <button class="plain-button section-button" type="button" data-section-button="green">Green</button>
-      <button class="plain-button section-button" type="button" data-section-button="concerns">Concerns</button>
-      <button class="plain-button section-button" type="button" data-section-button="red-flags">Red flags</button>
-      <button class="plain-button section-button" type="button" data-section-button="point-of-view">POV</button>
-      <button class="plain-button" id="previewButton" type="button">Preview</button>
-      <button class="plain-button" id="settingsButton" type="button">Setup</button>
+    <div class="footer-left">
+      <a class="footer-date" id="footerDate" href="https://amitdialpad.github.io/heartbeats/"></a>
+      <button class="status-chip" id="localModeIndicator" type="button" hidden title="Done saves locally in this browser. Nothing is pushed to GitHub.">Local</button>
     </div>
-    <div class="meta" id="meta"></div>
-    <button class="done-button" id="doneButton" type="button">Done</button>
+    <div class="footer-status" id="meta"></div>
+    <div class="footer-actions">
+      <button class="plain-button" id="previewButton" type="button">Preview</button>
+      <button class="plain-button" id="commandButton" type="button" aria-expanded="false" aria-controls="commandMenu">Tools</button>
+      <button class="done-button" id="doneButton" type="button">Done</button>
+    </div>
   </footer>
+  <div class="menu-popover" id="commandMenu" hidden>
+    <div class="menu-section mobile-menu-item">
+      <button type="button" id="previewCommandButton" data-command="preview">Preview</button>
+    </div>
+    <div class="menu-section">
+      <p class="menu-label">Add</p>
+      <button type="button" data-command="add-image">Add image</button>
+      <button type="button" data-command="add-link">Add link</button>
+    </div>
+    <div class="menu-section">
+      <p class="menu-label">Mark current thought</p>
+      <button type="button" data-section-command="green">Mark as Green</button>
+      <button type="button" data-section-command="concerns">Mark as Concern</button>
+      <button type="button" data-section-command="red-flags">Mark as Red flag</button>
+      <button type="button" data-section-command="point-of-view">Mark as POV</button>
+    </div>
+    <div class="menu-section">
+      <p class="menu-label">Insert structure</p>
+      <button type="button" data-insert-template="daily">Insert daily structure</button>
+      <button type="button" data-insert-template="concern">Concern</button>
+      <button type="button" data-insert-template="red-flag">Red flag</button>
+      <button type="button" data-insert-template="pov">POV</button>
+    </div>
+    <div class="menu-section">
+      <p class="menu-label">Manage</p>
+      <button type="button" data-command="past-updates">Past updates</button>
+      <button type="button" data-command="setup">Setup</button>
+    </div>
+  </div>
+  <div class="selection-toolbar" id="selectionToolbar" hidden aria-label="Text formatting">
+    <button type="button" data-format-action="bold" title="Bold">B</button>
+    <button type="button" data-format-action="italic" title="Italic">I</button>
+    <button type="button" data-format-action="link" title="Link">Link</button>
+    <button type="button" data-format-action="code" title="Inline code">Code</button>
+    <button type="button" data-format-action="quote" title="Quote">Quote</button>
+  </div>
   <input class="file-input" id="imageInput" type="file" accept="image/*" multiple />
 
   <dialog id="settingsDialog">
@@ -615,6 +882,24 @@
     </form>
   </dialog>
 
+  <dialog id="linkDialog">
+    <form class="link-settings" id="linkForm" method="dialog">
+      <h2>Link</h2>
+      <label class="field">
+        <span>URL</span>
+        <input id="linkUrlInput" autocomplete="off" placeholder="https://example.com" />
+      </label>
+      <label class="field">
+        <span>Label</span>
+        <input id="linkLabelInput" autocomplete="off" />
+      </label>
+      <div class="settings-actions">
+        <button class="plain-button" id="cancelLinkButton" type="button">Cancel</button>
+        <button class="done-button" id="saveLinkButton" type="submit">Apply</button>
+      </div>
+    </form>
+  </dialog>
+
 <script>
 const OWNER = "amitdialpad";
 const REPO = "heartbeats";
@@ -627,6 +912,7 @@ const STORAGE = {
   editing: "heartbeats.editing",
   localEntries: "heartbeats.localEntries",
   localOverrides: "heartbeats.localOverrides",
+  hiddenEntries: "heartbeats.hiddenEntries",
 };
 const LOCAL_ONLY = ["localhost", "127.0.0.1", ""].includes(location.hostname);
 const DRAFT_DB = {
@@ -637,27 +923,37 @@ const DRAFT_DB = {
 
 const editor = document.getElementById("editor");
 const imageInput = document.getElementById("imageInput");
-const imageButton = document.getElementById("imageButton");
-const linkButton = document.getElementById("linkButton");
 const chromeHotspot = document.getElementById("chromeHotspot");
 const footerBar = document.querySelector(".footer-bar");
-const sectionButtons = Array.from(document.querySelectorAll("[data-section-button]"));
 const previewButton = document.getElementById("previewButton");
+const previewCommandButton = document.getElementById("previewCommandButton");
 const previewPanel = document.getElementById("previewPanel");
+const previewMeta = document.getElementById("previewMeta");
 const previewBody = document.getElementById("previewBody");
 const doneButton = document.getElementById("doneButton");
 const meta = document.getElementById("meta");
 const footerDate = document.getElementById("footerDate");
+const localModeIndicator = document.getElementById("localModeIndicator");
+const commandButton = document.getElementById("commandButton");
+const commandMenu = document.getElementById("commandMenu");
+const selectionToolbar = document.getElementById("selectionToolbar");
 const settingsDialog = document.getElementById("settingsDialog");
-const settingsButton = document.getElementById("settingsButton");
 const authorInput = document.getElementById("authorInput");
 const tokenInput = document.getElementById("tokenInput");
 const saveSettingsButton = document.getElementById("saveSettingsButton");
 const forgetButton = document.getElementById("forgetButton");
+const linkDialog = document.getElementById("linkDialog");
+const linkForm = document.getElementById("linkForm");
+const linkUrlInput = document.getElementById("linkUrlInput");
+const linkLabelInput = document.getElementById("linkLabelInput");
+const cancelLinkButton = document.getElementById("cancelLinkButton");
 let lastRange = null;
 let showingPreview = false;
 let chromeTimer = null;
 let currentEdit = null;
+let linkRange = null;
+let editingLink = null;
+let commandReturnFocus = null;
 
 const SECTION_LABELS = {
   green: "Green",
@@ -680,6 +976,13 @@ function localTime(d = new Date()) {
 
 function displayDate(d = new Date()) {
   return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+}
+
+function setFooterDate() {
+  const fullDate = displayDate();
+  footerDate.textContent = "Today";
+  footerDate.title = fullDate;
+  footerDate.setAttribute("aria-label", fullDate);
 }
 
 function readJson(key, fallback) {
@@ -806,7 +1109,15 @@ function linkCard(url, label) {
 
 function sectionKey(s) {
   const key = s.trim().toLowerCase();
-  return ["green", "concerns", "red flags", "point of view"].includes(key) ? key : "";
+  const aliases = {
+    green: "green",
+    concerns: "concerns",
+    "red flag": "red-flags",
+    "red flags": "red-flags",
+    pov: "point-of-view",
+    "point of view": "point-of-view",
+  };
+  return aliases[key] || "";
 }
 
 function inline(s) {
@@ -823,6 +1134,7 @@ function inline(s) {
     return stash(`<a href="${safeUrl(url)}" target="_blank" rel="noopener">${inline(label)}</a>`);
   });
   html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/(^|[^*])\*([^*\s][^*]*?)\*/g, "$1<em>$2</em>");
   html = html.replace(/(^|[\s(])((?:https?:\/\/)[^\s<)]+)/g, (_, lead, url) => {
     const clean = url.replace(/[.,;:!?]+$/, "");
     const tail = url.slice(clean.length);
@@ -843,11 +1155,12 @@ function mdToHtml(md) {
   for (const line of md.split("\n")) {
     const t = line.trim();
     if (!t) { flush(); continue; }
-    const image = t.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    const image = t.match(/^!\[([^\]]*)\]\(([^)\s]+)(?:\s+"(small|medium|large|full)")?\)$/);
     if (image) {
       flush();
       const caption = image[1].trim();
-      out.push(`<figure><img src="${safeUrl(image[2])}" alt="${attr(caption)}" loading="lazy">${caption ? `<figcaption>${inline(caption)}</figcaption>` : ""}</figure>`);
+      const size = image[3] ? ` data-image-size="${attr(image[3])}"` : "";
+      out.push(`<figure${size}><img src="${safeUrl(image[2])}" alt="${attr(caption)}" loading="lazy">${caption ? `<figcaption>${inline(caption)}</figcaption>` : ""}</figure>`);
       continue;
     }
     const card = standaloneLink(t);
@@ -872,7 +1185,9 @@ function mdToHtml(md) {
 }
 
 function editorText() {
-  return editor.innerText.replace(/\u00a0/g, " ").trim();
+  const clone = editor.cloneNode(true);
+  clone.querySelectorAll(".image-controls").forEach(node => node.remove());
+  return (clone.innerText || clone.textContent || "").replace(/\u00a0/g, " ").trim();
 }
 
 function wordCount() {
@@ -891,7 +1206,10 @@ function updateMeta() {
   const words = wordCount();
   const images = imageCount();
   if (!words && !images) {
-    meta.textContent = currentEdit ? "Editing past update" : LOCAL_ONLY ? "Local mode" : hasToken() ? "Ready" : "Setup needed";
+    const state = [];
+    if (currentEdit) state.push("Editing");
+    if (!LOCAL_ONLY && !hasToken()) state.push("Setup needed");
+    meta.textContent = state.join(", ");
     doneButton.disabled = false;
     return;
   }
@@ -899,6 +1217,7 @@ function updateMeta() {
   if (words) parts.push(words === 1 ? "1 word" : `${words} words`);
   if (images) parts.push(images === 1 ? "1 image" : `${images} images`);
   if (currentEdit) parts.push("editing");
+  if (!LOCAL_ONLY && !hasToken()) parts.push("setup needed");
   meta.textContent = parts.join(", ");
 }
 
@@ -993,6 +1312,27 @@ function insertNodeAtCursor(node) {
   rememberSelection();
 }
 
+function insertFragmentAtCursor(fragment) {
+  restoreSelection();
+  const selection = window.getSelection();
+  let range = selection && selection.rangeCount ? selection.getRangeAt(0) : null;
+  if (!range || !editor.contains(range.commonAncestorContainer)) {
+    range = document.createRange();
+    range.selectNodeContents(editor);
+    range.collapse(false);
+  }
+  const lastNode = fragment.lastChild;
+  range.deleteContents();
+  range.insertNode(fragment);
+  if (lastNode) {
+    range.setStartAfter(lastNode);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+  rememberSelection();
+}
+
 function insertTextAtCursor(text) {
   insertNodeAtCursor(document.createTextNode(text));
 }
@@ -1017,12 +1357,106 @@ function insertHtmlAtCursor(html) {
   rememberSelection();
 }
 
+function selectionInsideEditor() {
+  const selection = window.getSelection();
+  if (!selection || !selection.rangeCount || selection.isCollapsed) return null;
+  const range = selection.getRangeAt(0);
+  return editor.contains(range.commonAncestorContainer) ? range : null;
+}
+
+function selectedText() {
+  const range = selectionInsideEditor();
+  return range ? range.toString().trim() : "";
+}
+
+function persistEditorChange() {
+  persistDraft();
+  updateMeta();
+  updatePreview();
+  rememberSelection();
+}
+
+function wrapSelection(tag) {
+  const range = selectionInsideEditor() || lastRange;
+  if (!range || range.collapsed) return;
+  restoreSelection();
+  const selection = window.getSelection();
+  const liveRange = selection && selection.rangeCount ? selection.getRangeAt(0) : range;
+  const wrapper = document.createElement(tag);
+  try {
+    liveRange.surroundContents(wrapper);
+  } catch {
+    wrapper.appendChild(liveRange.extractContents());
+    liveRange.insertNode(wrapper);
+  }
+  liveRange.selectNodeContents(wrapper);
+  selection.removeAllRanges();
+  selection.addRange(liveRange);
+  persistEditorChange();
+  updateSelectionToolbar();
+}
+
+function quoteSelection() {
+  const range = selectionInsideEditor() || lastRange;
+  if (!range || range.collapsed) return;
+  restoreSelection();
+  const selection = window.getSelection();
+  const liveRange = selection && selection.rangeCount ? selection.getRangeAt(0) : range;
+  const text = liveRange.toString().trim();
+  if (!text) return;
+  const quote = document.createElement("blockquote");
+  for (const line of text.split(/\n+/).map(line => line.trim()).filter(Boolean)) {
+    const p = document.createElement("p");
+    p.textContent = line;
+    quote.appendChild(p);
+  }
+  liveRange.deleteContents();
+  liveRange.insertNode(quote);
+  liveRange.setStartAfter(quote);
+  liveRange.collapse(true);
+  selection.removeAllRanges();
+  selection.addRange(liveRange);
+  persistEditorChange();
+  updateSelectionToolbar();
+}
+
 function slugFileName(name, fallback = "screenshot.png") {
   const source = name || fallback;
   const dot = source.lastIndexOf(".");
   const base = (dot === -1 ? source : source.slice(0, dot)).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "image";
   const ext = (dot === -1 ? "png" : source.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, "")) || "png";
   return `${base}.${ext}`;
+}
+
+function fileExtension(file) {
+  const name = file?.name || "";
+  const dot = name.lastIndexOf(".");
+  const fromName = dot === -1 ? "" : name.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (fromName && fromName.length <= 5) return fromName;
+  const fromType = (file?.type || "").split("/")[1] || "png";
+  return fromType.replace(/[^a-z0-9]/g, "") || "png";
+}
+
+function contextTextForImageName() {
+  const block = currentTopLevelBlock();
+  const candidates = [];
+  if (block && block !== editor) candidates.push(block.innerText || block.textContent || "");
+  let previous = block?.previousElementSibling;
+  while (previous && candidates.join(" ").trim().split(/\s+/).length < 8) {
+    candidates.unshift(previous.innerText || previous.textContent || "");
+    previous = previous.previousElementSibling;
+  }
+  const text = candidates.join(" ").replace(/\s+/g, " ").trim() || editorText();
+  return text.split(/\s+/).slice(-8).join(" ");
+}
+
+function contextualImageFileName(file, index = 0) {
+  const generic = /^(image|screenshot|screen shot|clipboard|pasted image)/i.test(file?.name || "");
+  if (file?.name && !generic) return slugFileName(file.name);
+  const context = contextTextForImageName();
+  const base = (context || `heartbeat ${localDate()} ${localTime()}`).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 72) || "heartbeat-image";
+  const suffix = index ? `-${pad(index + 1)}` : "";
+  return `${base}${suffix}.${fileExtension(file)}`;
 }
 
 function fileToDataUrl(file) {
@@ -1040,19 +1474,59 @@ function insertParagraphBreak() {
   insertNodeAtCursor(p);
 }
 
-async function insertImageFile(file) {
+const IMAGE_SIZES = ["small", "medium", "large", "full"];
+
+function imageControls() {
+  const controls = document.createElement("div");
+  controls.className = "image-controls";
+  controls.contentEditable = "false";
+  controls.innerHTML = `
+    <button type="button" data-image-action="smaller" title="Make image smaller">-</button>
+    <button type="button" data-image-action="larger" title="Make image larger">+</button>
+    <button type="button" data-image-action="full" title="Use full width">Full</button>
+  `;
+  return controls;
+}
+
+function ensureImageControls(root = editor) {
+  const figures = root.matches?.("figure") ? [root] : Array.from(root.querySelectorAll?.("figure") || []);
+  for (const figure of figures) {
+    if (!figure.querySelector("img")) continue;
+    figure.dataset.imageSize ||= "full";
+    figure.tabIndex = 0;
+    if (!figure.querySelector(":scope > .image-controls")) figure.prepend(imageControls());
+  }
+}
+
+function resizeImageFigure(figure, action) {
+  if (!figure) return;
+  const current = figure.dataset.imageSize || "full";
+  if (action === "full") {
+    figure.dataset.imageSize = "full";
+  } else {
+    const index = Math.max(0, IMAGE_SIZES.indexOf(current));
+    const nextIndex = action === "larger" ? Math.min(IMAGE_SIZES.length - 1, index + 1) : Math.max(0, index - 1);
+    figure.dataset.imageSize = IMAGE_SIZES[nextIndex];
+  }
+  persistEditorChange();
+}
+
+async function insertImageFile(file, index = 0) {
   if (!file || !file.type.startsWith("image/")) return;
   const src = await fileToDataUrl(file);
   const figure = document.createElement("figure");
   const img = document.createElement("img");
   const caption = document.createElement("figcaption");
+  figure.dataset.imageSize = "full";
+  figure.tabIndex = 0;
   img.src = src;
   img.alt = "";
-  img.dataset.filename = slugFileName(file.name);
+  img.dataset.filename = contextualImageFileName(file, index);
   caption.contentEditable = "true";
   caption.dataset.placeholder = "Caption";
   figure.appendChild(img);
   figure.appendChild(caption);
+  ensureImageControls(figure);
   insertNodeAtCursor(figure);
   insertParagraphBreak();
   persistDraft();
@@ -1060,9 +1534,46 @@ async function insertImageFile(file) {
 }
 
 async function insertImageFiles(files) {
-  for (const file of files) {
-    await insertImageFile(file);
+  for (const [index, file] of files.entries()) {
+    await insertImageFile(file, index);
   }
+}
+
+function cleanClipboardHtml(html) {
+  if (!html) return "";
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const blockTags = new Set(["ADDRESS", "ARTICLE", "ASIDE", "BLOCKQUOTE", "DIV", "FIGURE", "FOOTER", "H1", "H2", "H3", "H4", "HEADER", "LI", "MAIN", "P", "PRE", "SECTION", "TR"]);
+  const walk = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) return node.textContent.replace(/\s+/g, " ");
+    if (node.nodeType !== Node.ELEMENT_NODE) return "";
+    const tag = node.tagName;
+    if (tag === "BR") return "\n";
+    if (tag === "A") {
+      const text = Array.from(node.childNodes).map(walk).join("").trim();
+      const href = node.getAttribute("href") || "";
+      return href ? `[${text || href}](${href})` : text;
+    }
+    const text = Array.from(node.childNodes).map(walk).join("");
+    return blockTags.has(tag) ? `\n${text.trim()}\n` : text;
+  };
+  return walk(doc.body).replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+function insertCleanText(text) {
+  const normalized = text.replace(/\r\n?/g, "\n");
+  if (!normalized.trim()) return;
+  const fragment = document.createDocumentFragment();
+  for (const line of normalized.split("\n")) {
+    const p = document.createElement("p");
+    if (line.trim()) {
+      p.textContent = line.trim();
+    } else {
+      p.appendChild(document.createElement("br"));
+    }
+    fragment.appendChild(p);
+  }
+  insertFragmentAtCursor(fragment);
+  persistEditorChange();
 }
 
 function normalizeUrl(url) {
@@ -1071,16 +1582,86 @@ function normalizeUrl(url) {
   return /^(https?:|mailto:)/i.test(clean) ? clean : `https://${clean}`;
 }
 
-function insertLink() {
-  restoreSelection();
-  const selection = window.getSelection();
-  const selectedText = selection && !selection.isCollapsed ? selection.toString().trim() : "";
-  const url = normalizeUrl(window.prompt("Link URL", selectedText.startsWith("http") ? selectedText : "") || "");
-  if (!url) return;
-  const label = selectedText || url;
-  if (selectedText) {
-    document.execCommand("createLink", false, url);
+function isLikelyUrl(text) {
+  const clean = text.trim();
+  if (!clean || /\s/.test(clean)) return false;
+  return /^(https?:\/\/|mailto:|www\.|[a-z0-9.-]+\.[a-z]{2,}(?:[/:?#].*)?$)/i.test(clean);
+}
+
+function firstClipboardLink(html, plain) {
+  if (isLikelyUrl(plain)) return normalizeUrl(plain);
+  if (!html) return "";
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const href = doc.querySelector("a[href]")?.getAttribute("href") || "";
+  return isLikelyUrl(href) ? normalizeUrl(href) : "";
+}
+
+function linkSelectedText(url) {
+  const activeRange = selectionInsideEditor();
+  const range = activeRange || lastRange;
+  if (!range || range.collapsed || !url) return false;
+  if (activeRange) {
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(activeRange);
   } else {
+    restoreSelection();
+  }
+  const selection = window.getSelection();
+  const liveRange = selection && selection.rangeCount ? selection.getRangeAt(0) : range;
+  if (liveRange.collapsed) return false;
+  const link = document.createElement("a");
+  link.href = normalizeUrl(url);
+  link.target = "_blank";
+  link.rel = "noopener";
+  link.appendChild(liveRange.extractContents());
+  liveRange.insertNode(link);
+  liveRange.selectNodeContents(link);
+  selection.removeAllRanges();
+  selection.addRange(liveRange);
+  persistEditorChange();
+  return true;
+}
+
+function closestLinkFromSelection() {
+  const selection = window.getSelection();
+  if (!selection || !selection.rangeCount) return null;
+  let node = selection.getRangeAt(0).commonAncestorContainer;
+  if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+  return node?.closest?.("a") && editor.contains(node.closest("a")) ? node.closest("a") : null;
+}
+
+function openLinkDialog() {
+  rememberSelection();
+  restoreSelection();
+  editingLink = closestLinkFromSelection();
+  const selection = window.getSelection();
+  linkRange = selection && selection.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
+  const label = editingLink ? editingLink.textContent.trim() : selectedText();
+  const href = editingLink ? editingLink.getAttribute("href") || "" : label.startsWith("http") || label.startsWith("mailto:") ? label : "";
+  linkUrlInput.value = href;
+  linkLabelInput.value = label;
+  linkDialog.showModal();
+  setTimeout(() => linkUrlInput.focus(), 0);
+}
+
+function applyLinkFromDialog() {
+  const url = normalizeUrl(linkUrlInput.value || "");
+  if (!url) return;
+  const label = (linkLabelInput.value || "").trim() || url;
+
+  if (editingLink) {
+    editingLink.href = url;
+    editingLink.target = "_blank";
+    editingLink.rel = "noopener";
+    editingLink.textContent = label;
+  } else {
+    if (linkRange) {
+      const selection = window.getSelection();
+      editor.focus();
+      selection.removeAllRanges();
+      selection.addRange(linkRange);
+    }
     const link = document.createElement("a");
     link.href = url;
     link.target = "_blank";
@@ -1088,8 +1669,10 @@ function insertLink() {
     link.textContent = label;
     insertNodeAtCursor(link);
   }
-  persistDraft();
-  updatePreview();
+  linkRange = null;
+  editingLink = null;
+  persistEditorChange();
+  linkDialog.close();
 }
 
 function normalizeEditorBlocks() {
@@ -1156,10 +1739,65 @@ function currentTopLevelBlock() {
   return editor.lastElementChild;
 }
 
+function replaceBlock(block, node) {
+  if (block && block !== editor) {
+    block.replaceWith(node);
+  } else {
+    editor.appendChild(node);
+  }
+}
+
 function blankParagraph() {
   const p = document.createElement("p");
   p.appendChild(document.createElement("br"));
   return p;
+}
+
+function emptyBlock(tag) {
+  const node = document.createElement(tag);
+  node.appendChild(document.createElement("br"));
+  return node;
+}
+
+function transformMarkdownShortcut(event) {
+  if (event.key !== " " && event.key !== "Enter") return false;
+  const block = currentTopLevelBlock();
+  if (!block || block === editor) return false;
+  const text = (block.innerText || block.textContent || "").replace(/\u00a0/g, " ").trim();
+  const spaceOnly = event.key === " ";
+  const enterOrSpace = event.key === " " || event.key === "Enter";
+  let next = null;
+  let caret = null;
+
+  if (spaceOnly && text === "#") {
+    next = emptyBlock("h2");
+    caret = next;
+  } else if (spaceOnly && text === "##") {
+    next = emptyBlock("h3");
+    caret = next;
+  } else if (spaceOnly && text === "###") {
+    next = emptyBlock("h4");
+    caret = next;
+  } else if (spaceOnly && text === "-") {
+    next = document.createElement("ul");
+    caret = emptyBlock("li");
+    next.appendChild(caret);
+  } else if (spaceOnly && text === ">") {
+    next = document.createElement("blockquote");
+    caret = blankParagraph();
+    next.appendChild(caret);
+  } else if (enterOrSpace && text === "---") {
+    next = document.createElement("hr");
+    caret = blankParagraph();
+  }
+
+  if (!next) return false;
+  event.preventDefault();
+  replaceBlock(block, next);
+  if (next.tagName?.toLowerCase() === "hr") next.after(caret);
+  placeCaretIn(caret);
+  persistEditorChange();
+  return true;
 }
 
 function placeCaretIn(node) {
@@ -1221,6 +1859,89 @@ function labelCurrentThought(section) {
   hideChromeSoon(900);
 }
 
+function sectionHeading(section) {
+  const h = document.createElement("h3");
+  h.dataset.section = section;
+  h.textContent = SECTION_LABELS[section];
+  return h;
+}
+
+function textParagraph(text) {
+  const p = document.createElement("p");
+  p.textContent = text;
+  return p;
+}
+
+function appendTemplateLine(fragment, line) {
+  if (line.type === "section") {
+    fragment.appendChild(sectionHeading(line.section));
+    return null;
+  }
+  if (line.type === "text") {
+    fragment.appendChild(textParagraph(line.text));
+    return null;
+  }
+  const p = blankParagraph();
+  fragment.appendChild(p);
+  return p;
+}
+
+function insertStructureTemplate(type) {
+  if (showingPreview) setPreview(false);
+  restoreSelection();
+  const templates = {
+    daily: [
+      { type: "section", section: "green" },
+      { type: "blank" },
+      { type: "section", section: "concerns" },
+      { type: "blank" },
+      { type: "section", section: "red-flags" },
+      { type: "blank" },
+      { type: "section", section: "point-of-view" },
+      { type: "blank" },
+    ],
+    concern: [
+      { type: "section", section: "concerns" },
+      { type: "text", text: "What is happening:" },
+      { type: "blank" },
+      { type: "text", text: "How I am thinking about it:" },
+      { type: "blank" },
+      { type: "text", text: "What I need:" },
+      { type: "blank" },
+    ],
+    "red-flag": [
+      { type: "section", section: "red-flags" },
+      { type: "text", text: "What is stuck:" },
+      { type: "blank" },
+      { type: "text", text: "Why it matters:" },
+      { type: "blank" },
+      { type: "text", text: "Decision or help needed:" },
+      { type: "blank" },
+    ],
+    pov: [
+      { type: "section", section: "point-of-view" },
+      { type: "text", text: "My read:" },
+      { type: "blank" },
+      { type: "text", text: "Why I think this:" },
+      { type: "blank" },
+      { type: "text", text: "What I would push for:" },
+      { type: "blank" },
+    ],
+  };
+  const lines = templates[type];
+  if (!lines) return;
+  const fragment = document.createDocumentFragment();
+  let firstBlank = null;
+  for (const line of lines) {
+    const blank = appendTemplateLine(fragment, line);
+    if (!firstBlank && blank) firstBlank = blank;
+  }
+  insertFragmentAtCursor(fragment);
+  if (firstBlank) placeCaretIn(firstBlank);
+  persistEditorChange();
+  hideChromeSoon(900);
+}
+
 function markdownInline(node, assetMap) {
   if (node.nodeType === Node.TEXT_NODE) return node.textContent.replace(/\u00a0/g, " ");
   if (node.nodeType !== Node.ELEMENT_NODE) return "";
@@ -1234,7 +1955,7 @@ function markdownInline(node, assetMap) {
     return `**${Array.from(node.childNodes).map(child => markdownInline(child, assetMap)).join("").trim()}**`;
   }
   if (tag === "em" || tag === "i") {
-    return Array.from(node.childNodes).map(child => markdownInline(child, assetMap)).join("");
+    return `*${Array.from(node.childNodes).map(child => markdownInline(child, assetMap)).join("").trim()}*`;
   }
   if (tag === "code") {
     return `\`${node.textContent.trim()}\``;
@@ -1260,7 +1981,8 @@ function markdownBlock(node, assetMap) {
     if (!img) return "";
     const caption = (node.querySelector("figcaption")?.innerText || img.alt || "").trim();
     const src = assetMap.get(img) || img.getAttribute("src") || "";
-    return `![${caption}](${src})`;
+    const size = IMAGE_SIZES.includes(node.dataset.imageSize) && node.dataset.imageSize !== "full" ? ` "${node.dataset.imageSize}"` : "";
+    return `![${caption}](${src}${size})`;
   }
   if (tag === "img") return markdownInline(node, assetMap);
   if (tag === "h1" || tag === "h2") return `# ${markdownInline(node, assetMap).trim()}`;
@@ -1287,17 +2009,55 @@ function editorToMarkdown(assetMap = new Map()) {
   return Array.from(editor.childNodes).map(node => markdownBlock(node, assetMap)).filter(Boolean).join("\n\n").trim();
 }
 
+function linkCountFromMarkdown(markdown) {
+  const markdownLinks = markdown.match(/\[[^\]]+\]\(https?:\/\/[^)\s]+\)/g) || [];
+  const standaloneLinks = markdown.match(/^https?:\/\/[^\s<]+$/gm) || [];
+  return markdownLinks.length + standaloneLinks.length;
+}
+
+function detectedSections(markdown) {
+  const seen = [];
+  for (const line of markdown.split("\n")) {
+    if (!line.startsWith("## ")) continue;
+    const label = line.slice(3).trim();
+    const key = sectionKey(label);
+    if (key && !seen.includes(SECTION_LABELS[key])) seen.push(SECTION_LABELS[key]);
+  }
+  return seen;
+}
+
+function updatePreviewMeta(markdown) {
+  if (!markdown) {
+    previewMeta.textContent = "";
+    return;
+  }
+  const words = (markdown.replace(/!\[[^\]]*\]\([^)]+\)/g, "").match(/\S+/g) || []).length;
+  const images = imageCount();
+  const links = linkCountFromMarkdown(markdown);
+  const sections = detectedSections(markdown);
+  const parts = [
+    words === 1 ? "1 word" : `${words} words`,
+    images === 1 ? "1 image" : `${images} images`,
+    links === 1 ? "1 link" : `${links} links`,
+  ];
+  if (sections.length) parts.push(`Sections: ${sections.join(", ")}`);
+  previewMeta.textContent = parts.join(" · ");
+}
+
 function updatePreview() {
   if (!showingPreview) return;
   const markdown = editorToMarkdown();
+  updatePreviewMeta(markdown);
   previewBody.innerHTML = markdown ? mdToHtml(markdown) : '<p class="empty">Nothing to preview.</p>';
 }
 
 function setPreview(on) {
   showingPreview = on;
+  document.body.classList.toggle("is-reading", on);
   editor.hidden = on;
   previewPanel.hidden = !on;
   previewButton.textContent = on ? "Write" : "Preview";
+  previewCommandButton.textContent = on ? "Write" : "Preview";
   if (on) updatePreview();
   if (!on) {
     editor.focus();
@@ -1330,6 +2090,118 @@ function scheduleChromeHide(delay = 700) {
 function hideChromeSoon(delay = 700) {
   document.body.classList.add("chrome-suppressed");
   scheduleChromeHide(delay);
+}
+
+function hideMenus() {
+  commandMenu.hidden = true;
+  commandMenu.style.top = "";
+  commandMenu.style.bottom = "";
+  commandMenu.style.left = "";
+  commandButton.setAttribute("aria-expanded", "false");
+  commandReturnFocus = null;
+}
+
+function visibleCommandItems() {
+  return Array.from(commandMenu.querySelectorAll("button")).filter(button => {
+    const section = button.closest(".menu-section");
+    return !button.disabled && button.offsetParent !== null && !section?.hidden;
+  });
+}
+
+function focusCommandItem(index = 0) {
+  const items = visibleCommandItems();
+  if (!items.length) return;
+  const next = ((index % items.length) + items.length) % items.length;
+  items[next].focus();
+}
+
+function focusNextCommandItem(direction) {
+  const items = visibleCommandItems();
+  if (!items.length) return;
+  const current = items.indexOf(document.activeElement);
+  focusCommandItem(current === -1 ? 0 : current + direction);
+}
+
+function closeCommandMenu({ restoreFocus = true } = {}) {
+  const target = commandReturnFocus;
+  hideMenus();
+  if (restoreFocus && target) target.focus();
+  commandReturnFocus = null;
+}
+
+function toggleMenu(menu, button) {
+  const wasHidden = menu.hidden;
+  hideMenus();
+  if (!wasHidden) return;
+  const rect = button.getBoundingClientRect();
+  menu.hidden = false;
+  menu.style.top = "";
+  menu.style.bottom = "68px";
+  menu.style.left = `${Math.max(12, Math.min(rect.left, window.innerWidth - menu.offsetWidth - 12))}px`;
+  button.setAttribute("aria-expanded", "true");
+  commandReturnFocus = button;
+  focusCommandItem(0);
+  revealChrome(0);
+}
+
+function caretRect() {
+  const selection = window.getSelection();
+  if (!selection || !selection.rangeCount) return null;
+  const range = selection.getRangeAt(0);
+  if (!editor.contains(range.commonAncestorContainer)) return null;
+  const rect = range.getBoundingClientRect();
+  if (rect.width || rect.height) return rect;
+
+  const marker = document.createElement("span");
+  marker.textContent = "\u200b";
+  marker.style.cssText = "display:inline-block;width:0;overflow:hidden;";
+  const markerRange = range.cloneRange();
+  markerRange.insertNode(marker);
+  const markerRect = marker.getBoundingClientRect();
+  marker.remove();
+  selection.removeAllRanges();
+  selection.addRange(range);
+  rememberSelection();
+  return markerRect;
+}
+
+function openCommandMenuAtCaret() {
+  const rect = caretRect() || editor.getBoundingClientRect();
+  hideMenus();
+  commandMenu.hidden = false;
+  commandMenu.style.bottom = "auto";
+  const top = Math.min(rect.bottom + 8, window.innerHeight - commandMenu.offsetHeight - 12);
+  const left = Math.min(Math.max(12, rect.left), window.innerWidth - commandMenu.offsetWidth - 12);
+  commandMenu.style.top = `${Math.max(12, top)}px`;
+  commandMenu.style.left = `${Math.max(12, left)}px`;
+  commandButton.setAttribute("aria-expanded", "true");
+  commandReturnFocus = editor;
+  focusCommandItem(0);
+}
+
+function setLocalControls() {
+  localModeIndicator.hidden = !LOCAL_ONLY;
+}
+
+function showLocalModeInfo() {
+  window.alert("Done saves locally in this browser. Nothing is pushed to GitHub.");
+}
+
+function localDraftEntry(body) {
+  const now = new Date();
+  const author = safeAuthor();
+  const date = localDate(now);
+  const beatId = `${date}-${author}-${localTime(now)}`;
+  const status = inferStatus(editorText());
+  return {
+    id: beatId,
+    path: `local/${beatId}`,
+    author,
+    date,
+    status,
+    markdown: body,
+    html: mdToHtml(body),
+  };
 }
 
 async function getGitHubContent(path, token) {
@@ -1482,23 +2354,11 @@ async function publishBeat() {
 }
 
 function publishLocalBeat() {
-  const now = new Date();
-  const author = safeAuthor();
-  const date = localDate(now);
-  const beatId = `${date}-${author}-${localTime(now)}`;
   const body = editorToMarkdown();
-  const status = inferStatus(editorText());
-  const markdown = buildMarkdown(body, date, status, author);
+  const entry = localDraftEntry(body);
+  const markdown = buildMarkdown(body, entry.date, entry.status, entry.author);
   const entries = JSON.parse(localStorage.getItem(STORAGE.localEntries) || "[]");
-  entries.unshift({
-    id: beatId,
-    path: `local/${beatId}`,
-    author,
-    date,
-    status,
-    markdown: body,
-    html: mdToHtml(body),
-  });
+  entries.unshift(entry);
   try {
     localStorage.setItem(STORAGE.localEntries, JSON.stringify(entries.slice(0, 30)));
   } catch {
@@ -1514,7 +2374,14 @@ function openSettings() {
   setTimeout(() => tokenInput.focus(), 0);
 }
 
-settingsButton.addEventListener("click", openSettings);
+function openImagePicker() {
+  restoreSelection();
+  imageInput.click();
+}
+
+function toggleCommandMenu() {
+  toggleMenu(commandMenu, commandButton);
+}
 
 saveSettingsButton.addEventListener("click", () => {
   localStorage.setItem(STORAGE.author, authorInput.value.trim() || "amit");
@@ -1530,13 +2397,88 @@ forgetButton.addEventListener("click", () => {
   updateMeta();
 });
 
-document.addEventListener("selectionchange", rememberSelection);
+function focusInSettingsInput() {
+  const el = document.activeElement;
+  return el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA") && !editor.contains(el);
+}
+
+function updateSelectionToolbar() {
+  const range = selectionInsideEditor();
+  if (!range || showingPreview) {
+    selectionToolbar.hidden = true;
+    return;
+  }
+  const rect = range.getBoundingClientRect();
+  if (!rect.width && !rect.height) {
+    selectionToolbar.hidden = true;
+    return;
+  }
+  selectionToolbar.hidden = false;
+  const top = Math.max(8, rect.top - 42);
+  const left = Math.max(8, Math.min(rect.left + rect.width / 2 - selectionToolbar.offsetWidth / 2, window.innerWidth - selectionToolbar.offsetWidth - 8));
+  selectionToolbar.style.top = `${top}px`;
+  selectionToolbar.style.left = `${left}px`;
+}
+
+function handleShortcut(event) {
+  const mod = event.metaKey || event.ctrlKey;
+  if (event.key === "Escape") {
+    if (linkDialog.open) linkDialog.close();
+    else if (settingsDialog.open) settingsDialog.close();
+    else if (!commandMenu.hidden) closeCommandMenu();
+    else if (showingPreview) setPreview(false);
+    return;
+  }
+  if (focusInSettingsInput()) return;
+  if (!mod) return;
+
+  const key = event.key.toLowerCase();
+  if (key === "b") {
+    event.preventDefault();
+    wrapSelection("strong");
+  } else if (key === "i") {
+    event.preventDefault();
+    wrapSelection("em");
+  } else if (key === "k") {
+    event.preventDefault();
+    openLinkDialog();
+  } else if (event.shiftKey && key === "p") {
+    event.preventDefault();
+    setPreview(!showingPreview);
+  } else if (event.key === "Enter") {
+    event.preventDefault();
+    doneButton.click();
+  } else if (key === "/" || event.code === "Slash") {
+    event.preventDefault();
+    toggleCommandMenu();
+  } else if (["1", "2", "3", "4"].includes(event.key)) {
+    event.preventDefault();
+    const sections = ["green", "concerns", "red-flags", "point-of-view"];
+    labelCurrentThought(sections[Number(event.key) - 1]);
+  }
+}
+
+document.addEventListener("selectionchange", () => {
+  rememberSelection();
+  updateSelectionToolbar();
+});
+
+document.addEventListener("keydown", handleShortcut);
 
 editor.addEventListener("input", () => {
   persistDraft();
   updateMeta();
   updatePreview();
   hideChromeSoon(900);
+});
+
+editor.addEventListener("keydown", (event) => {
+  if (event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey) {
+    event.preventDefault();
+    openCommandMenuAtCaret();
+    return;
+  }
+  transformMarkdownShortcut(event);
 });
 
 window.addEventListener("pagehide", () => {
@@ -1546,11 +2488,18 @@ window.addEventListener("pagehide", () => {
 editor.addEventListener("paste", async (event) => {
   const items = Array.from(event.clipboardData?.items || []);
   const imageFiles = items.filter(item => item.type.startsWith("image/")).map(item => item.getAsFile()).filter(Boolean);
-  if (!imageFiles.length) return;
+  const html = event.clipboardData?.getData("text/html") || "";
+  const plain = event.clipboardData?.getData("text/plain") || "";
+  if (!imageFiles.length && !plain && !html) return;
+  const pastedLink = firstClipboardLink(html, plain);
+  if (!imageFiles.length && pastedLink && linkSelectedText(pastedLink)) {
+    event.preventDefault();
+    return;
+  }
   event.preventDefault();
-  await insertImageFiles(imageFiles);
-  const text = event.clipboardData.getData("text/plain").trim();
-  if (text) insertTextAtCursor(text);
+  if (imageFiles.length) await insertImageFiles(imageFiles);
+  const text = html.includes("<a") ? cleanClipboardHtml(html) : plain;
+  if (text.trim()) insertCleanText(text);
 });
 
 editor.addEventListener("dragover", (event) => {
@@ -1569,17 +2518,103 @@ editor.addEventListener("drop", async (event) => {
   await insertImageFiles(files);
 });
 
-imageButton.addEventListener("click", () => {
-  restoreSelection();
-  imageInput.click();
-});
-
 imageInput.addEventListener("change", async () => {
   await insertImageFiles(Array.from(imageInput.files || []));
   imageInput.value = "";
 });
 
-linkButton.addEventListener("click", insertLink);
+linkForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  applyLinkFromDialog();
+});
+
+cancelLinkButton.addEventListener("click", () => linkDialog.close());
+
+linkDialog.addEventListener("close", () => {
+  linkRange = null;
+  editingLink = null;
+});
+
+selectionToolbar.addEventListener("mousedown", event => event.preventDefault());
+
+selectionToolbar.addEventListener("click", event => {
+  const button = event.target.closest("[data-format-action]");
+  if (!button) return;
+  const action = button.dataset.formatAction;
+  if (action === "bold") wrapSelection("strong");
+  if (action === "italic") wrapSelection("em");
+  if (action === "code") wrapSelection("code");
+  if (action === "quote") quoteSelection();
+  if (action === "link") openLinkDialog();
+});
+
+editor.addEventListener("click", event => {
+  const button = event.target.closest("[data-image-action]");
+  if (!button) return;
+  event.preventDefault();
+  resizeImageFigure(button.closest("figure"), button.dataset.imageAction);
+});
+
+localModeIndicator.addEventListener("click", showLocalModeInfo);
+
+commandButton.addEventListener("click", toggleCommandMenu);
+
+commandMenu.addEventListener("mousedown", event => event.preventDefault());
+
+commandMenu.addEventListener("keydown", event => {
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    focusNextCommandItem(1);
+  } else if (event.key === "ArrowUp") {
+    event.preventDefault();
+    focusNextCommandItem(-1);
+  } else if (event.key === "Home") {
+    event.preventDefault();
+    focusCommandItem(0);
+  } else if (event.key === "End") {
+    event.preventDefault();
+    focusCommandItem(visibleCommandItems().length - 1);
+  } else if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    document.activeElement?.click();
+  } else if (event.key === "Escape") {
+    event.preventDefault();
+    closeCommandMenu();
+  }
+});
+
+commandMenu.addEventListener("click", async event => {
+  const button = event.target.closest("button");
+  if (!button) return;
+  const command = button.dataset.command;
+
+  if (button.dataset.sectionCommand) {
+    closeCommandMenu({ restoreFocus: false });
+    labelCurrentThought(button.dataset.sectionCommand);
+  } else if (button.dataset.insertTemplate) {
+    closeCommandMenu({ restoreFocus: false });
+    insertStructureTemplate(button.dataset.insertTemplate);
+  } else if (command === "add-image") {
+    closeCommandMenu({ restoreFocus: false });
+    openImagePicker();
+  } else if (command === "add-link") {
+    closeCommandMenu({ restoreFocus: false });
+    openLinkDialog();
+  } else if (command === "past-updates") {
+    location.href = "./archive.html";
+  } else if (command === "setup") {
+    closeCommandMenu({ restoreFocus: false });
+    openSettings();
+  } else if (command === "preview") {
+    closeCommandMenu({ restoreFocus: false });
+    setPreview(!showingPreview);
+  }
+});
+
+document.addEventListener("pointerdown", event => {
+  if (event.target.closest(".menu-popover") || event.target.closest("#commandButton")) return;
+  closeCommandMenu({ restoreFocus: false });
+});
 
 chromeHotspot.addEventListener("pointerenter", () => revealChrome(0));
 chromeHotspot.addEventListener("pointerdown", () => revealChrome(3500));
@@ -1588,10 +2623,6 @@ footerBar.addEventListener("pointerenter", () => revealChrome(0));
 footerBar.addEventListener("pointerleave", () => {
   document.body.classList.remove("chrome-suppressed");
   scheduleChromeHide(1200);
-});
-
-sectionButtons.forEach(button => {
-  button.addEventListener("click", () => labelCurrentThought(button.dataset.sectionButton));
 });
 
 previewButton.addEventListener("click", () => setPreview(!showingPreview));
@@ -1619,7 +2650,7 @@ doneButton.addEventListener("click", async () => {
     await clearDraftRecord();
     localStorage.removeItem(STORAGE.editing);
     currentEdit = null;
-    meta.textContent = wasEditing ? LOCAL_ONLY ? "Saved edit locally." : "Update saved." : LOCAL_ONLY ? "Saved locally." : "Done. Publishing now.";
+    meta.textContent = wasEditing ? LOCAL_ONLY ? "Saved edit locally. Nothing was pushed." : "Update saved." : LOCAL_ONLY ? "Saved locally. Nothing was pushed." : "Done. Publishing now.";
   } catch (error) {
     if (error.message === "setup") {
       meta.textContent = "Setup needed";
@@ -1638,16 +2669,19 @@ async function loadInitialContent() {
   const draft = savedDraft && contextMatchesCurrent(savedDraft.context) ? savedDraft.html : "";
   if (currentEdit) {
     editor.innerHTML = draft || currentEdit.html || mdToHtml(currentEdit.markdown || "");
+    ensureImageControls();
     if (!draft) persistDraft();
     return;
   }
 
   editor.innerHTML = draft;
   cleanLoadedDraft();
+  ensureImageControls();
 }
 
 loadInitialContent().then(() => {
-  footerDate.textContent = displayDate();
+  setLocalControls();
+  setFooterDate();
   updateMeta();
   setTimeout(() => editor.focus(), 0);
 });

@@ -57,7 +57,15 @@ function linkCard(url, label) {
 }
 function sectionKey(s) {
   const key = s.trim().toLowerCase();
-  return ["green", "concerns", "red flags", "point of view"].includes(key) ? key : "";
+  const aliases = {
+    green: "green",
+    concerns: "concerns",
+    "red flag": "red-flags",
+    "red flags": "red-flags",
+    pov: "point-of-view",
+    "point of view": "point-of-view",
+  };
+  return aliases[key] || "";
 }
 function inline(s) {
   const tokens = [];
@@ -73,6 +81,7 @@ function inline(s) {
     return stash(`<a href="${safeUrl(url)}" target="_blank" rel="noopener">${inline(label)}</a>`);
   });
   html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/(^|[^*])\*([^*\s][^*]*?)\*/g, "$1<em>$2</em>");
   html = html.replace(/(^|[\s(])((?:https?:\/\/)[^\s<)]+)/g, (_, lead, url) => {
     const clean = url.replace(/[.,;:!?]+$/, "");
     const tail = url.slice(clean.length);
@@ -91,11 +100,12 @@ function mdToHtml(md) {
   for (const line of md.split("\n")) {
     const t = line.trim();
     if (!t) { flush(); continue; }
-    const image = t.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    const image = t.match(/^!\[([^\]]*)\]\(([^)\s]+)(?:\s+"(small|medium|large|full)")?\)$/);
     if (image) {
       flush();
       const caption = image[1].trim();
-      out.push(`<figure><img src="${safeUrl(image[2])}" alt="${attr(caption)}" loading="lazy">${caption ? `<figcaption>${inline(caption)}</figcaption>` : ""}</figure>`);
+      const size = image[3] ? ` data-image-size="${attr(image[3])}"` : "";
+      out.push(`<figure${size}><img src="${safeUrl(image[2])}" alt="${attr(caption)}" loading="lazy">${caption ? `<figcaption>${inline(caption)}</figcaption>` : ""}</figure>`);
       continue;
     }
     const card = standaloneLink(t);
