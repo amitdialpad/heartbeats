@@ -1,7 +1,7 @@
 {
   "name": "heartbeats",
   "version": "1.0.0",
-  "description": "Async written updates between Amit and Josh. Write a beat, save, done.",
+  "description": "Private written updates between Amit and Josh. Write a beat, save, done.",
   "type": "module",
   "bin": {
     "beat": "./bin/beat.mjs"

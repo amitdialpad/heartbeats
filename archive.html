@@ -469,11 +469,15 @@
 <script>
 const OWNER = "amitdialpad";
 const REPO = "heartbeats";
+const DEFAULT_CONTENT_OWNER = OWNER;
+const DEFAULT_CONTENT_REPO = "heartbeats-private";
 const BRANCH = "main";
 const archive = document.getElementById("archive");
 const archiveSearch = document.getElementById("archiveSearch");
 const STORAGE = {
   token: "heartbeats.githubToken",
+  contentOwner: "heartbeats.contentOwner",
+  contentRepo: "heartbeats.contentRepo",
   draft: "heartbeats.draft",
   draftContext: "heartbeats.draftContext",
   editing: "heartbeats.editing",
@@ -508,6 +512,165 @@ function readJson(key, fallback) {
 
 function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
+}
+
+function contentRepo() {
+  return {
+    owner: localStorage.getItem(STORAGE.contentOwner) || DEFAULT_CONTENT_OWNER,
+    repo: localStorage.getItem(STORAGE.contentRepo) || DEFAULT_CONTENT_REPO,
+  };
+}
+
+function contentRepoLabel(repo = contentRepo()) {
+  return `${repo.owner}/${repo.repo}`;
+}
+
+function safeUrl(raw) {
+  const url = String(raw || "").trim();
+  return /^(https?:|mailto:|#|\/|\.\/|\.\.\/|assets\/|data:image\/|[a-z0-9._~/-]+(?:[?#][^\s]*)?$)/i.test(url) ? attr(url) : "#";
+}
+
+function linkHost(raw) {
+  try {
+    return new URL(raw).hostname.replace(/^www\./, "");
+  } catch {
+    return String(raw || "").replace(/^https?:\/\//, "").split("/")[0] || raw;
+  }
+}
+
+function standaloneLink(t) {
+  const markdown = t.match(/^\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)$/);
+  if (markdown) return { label: markdown[1].trim(), url: markdown[2].trim() };
+  const raw = t.match(/^(https?:\/\/[^\s<]+)$/);
+  if (!raw) return null;
+  return { label: linkHost(raw[1]), url: raw[1].replace(/[.,;:!?]+$/, "") };
+}
+
+function linkCard(url, label) {
+  const clean = url.trim();
+  const title = (label || "").trim() || linkHost(clean);
+  return `<a class="link-card" href="${safeUrl(clean)}" target="_blank" rel="noopener"><span class="link-card-title">${esc(title)}</span><span class="link-card-url">${attr(linkHost(clean))}</span></a>`;
+}
+
+function sectionKey(s) {
+  const key = s.trim().toLowerCase();
+  const aliases = {
+    green: "green",
+    concerns: "concerns",
+    "red flag": "red-flags",
+    "red flags": "red-flags",
+    pov: "point-of-view",
+    "point of view": "point-of-view",
+  };
+  return aliases[key] || "";
+}
+
+function inline(s) {
+  const tokens = [];
+  const stash = (html) => {
+    tokens.push(html);
+    return `\u0000${tokens.length - 1}\u0000`;
+  };
+  let html = esc(s);
+  html = html.replace(/`([^`]+)`/g, (_, code) => stash(`<code>${code}</code>`));
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text, url) => {
+    const label = text.trim() || url.trim();
+    return stash(`<a href="${safeUrl(url)}" target="_blank" rel="noopener">${inline(label)}</a>`);
+  });
+  html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/(^|[^*])\*([^*\s][^*]*?)\*/g, "$1<em>$2</em>");
+  html = html.replace(/(^|[\s(])((?:https?:\/\/)[^\s<)]+)/g, (_, lead, url) => {
+    const clean = url.replace(/[.,;:!?]+$/, "");
+    const tail = url.slice(clean.length);
+    return `${lead}${stash(`<a href="${safeUrl(clean)}" target="_blank" rel="noopener">${attr(clean)}</a>`)}${tail}`;
+  });
+  return html.replace(/\u0000(\d+)\u0000/g, (_, i) => tokens[Number(i)] || "");
+}
+
+function mdToHtml(md) {
+  const out = [];
+  let list = null;
+  let quote = null;
+  const flush = () => {
+    if (list) { out.push("<ul>" + list.join("") + "</ul>"); list = null; }
+    if (quote) { out.push("<blockquote>" + quote.join("") + "</blockquote>"); quote = null; }
+  };
+  for (const line of md.split("\n")) {
+    const t = line.trim();
+    if (!t) { flush(); continue; }
+    const image = t.match(/^!\[([^\]]*)\]\(([^)\s]+)(?:\s+"(small|medium|large|full)")?\)$/);
+    if (image) {
+      flush();
+      const caption = image[1].trim();
+      const size = image[3] ? ` data-image-size="${attr(image[3])}"` : "";
+      out.push(`<figure${size}><img src="${safeUrl(image[2])}" alt="${attr(caption)}" loading="lazy">${caption ? `<figcaption>${inline(caption)}</figcaption>` : ""}</figure>`);
+      continue;
+    }
+    const card = standaloneLink(t);
+    if (card) { flush(); out.push(linkCard(card.url, card.label)); continue; }
+    if (/^-{3,}$/.test(t)) { flush(); out.push("<hr>"); continue; }
+    if (t.startsWith("# ")) { flush(); out.push(`<h2>${inline(t.slice(2))}</h2>`); continue; }
+    if (t.startsWith("## ")) {
+      flush();
+      const label = t.slice(3).trim();
+      const key = sectionKey(label);
+      out.push(key ? `<h3 class="section-label" data-section="${attr(key)}">${inline(label)}</h3>` : `<h3>${inline(label)}</h3>`);
+      continue;
+    }
+    if (t.startsWith("### ")) { flush(); out.push(`<h4>${inline(t.slice(4))}</h4>`); continue; }
+    if (t.startsWith("- ")) { (list ||= []).push(`<li>${inline(t.slice(2))}</li>`); continue; }
+    if (t.startsWith("> ")) { (quote ||= []).push(`<p>${inline(t.slice(2))}</p>`); continue; }
+    flush();
+    out.push(`<p>${inline(t)}</p>`);
+  }
+  flush();
+  return out.join("\n");
+}
+
+function parseMarkdown(raw) {
+  const match = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+  if (!match) return { meta: {}, body: raw.trim() };
+  const meta = {};
+  for (const line of match[1].split("\n")) {
+    const index = line.indexOf(":");
+    if (index === -1) continue;
+    meta[line.slice(0, index).trim()] = line.slice(index + 1).trim();
+  }
+  return { meta, body: match[2].trim() };
+}
+
+function decodeBase64Utf8(content) {
+  const binary = atob(String(content || "").replace(/\s/g, ""));
+  const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+function assetMime(path) {
+  const ext = String(path || "").split(".").pop().toLowerCase();
+  if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
+  if (ext === "gif") return "image/gif";
+  if (ext === "webp") return "image/webp";
+  return "image/png";
+}
+
+function shouldFetchPrivateAsset(url) {
+  return url && !/^(https?:|mailto:|data:|#|\/|\.\/|\.\.\/)/i.test(url);
+}
+
+async function resolvePrivateAssets(markdown, token) {
+  const cache = new Map();
+  const pattern = /!\[([^\]]*)\]\(([^)\s]+)(\s+"(?:small|medium|large|full)")?\)/g;
+  const replacements = [];
+  for (const match of markdown.matchAll(pattern)) {
+    const path = match[2];
+    if (!shouldFetchPrivateAsset(path)) continue;
+    if (!cache.has(path)) {
+      const asset = await getGitHubContent(path, token);
+      cache.set(path, `data:${assetMime(path)};base64,${String(asset.content || "").replace(/\s/g, "")}`);
+    }
+    replacements.push({ from: match[0], to: `![${match[1]}](${cache.get(path)}${match[3] || ""})` });
+  }
+  return replacements.reduce((next, item) => next.replace(item.from, item.to), markdown);
 }
 
 function entryKey(entry) {
@@ -572,7 +735,7 @@ function mergeEntries(indexedEntries) {
     const key = entryKey(entry);
     if (hidden.has(key)) continue;
     const override = overrides.get(key);
-    entries.push({ ...entry, ...(override || {}), source: override ? "override" : "indexed" });
+    entries.push({ ...entry, ...(override || {}), source: override ? "override" : entry.source || "indexed" });
   }
 
   for (const entry of readLocalEntries()) {
@@ -633,24 +796,58 @@ function applyArchiveSearch() {
   render(filtered, "No matching updates.");
 }
 
-async function getGitHubContent(path, token) {
-  const response = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`, {
+async function getGitHubContent(path, token, target = contentRepo()) {
+  const response = await fetch(`https://api.github.com/repos/${target.owner}/${target.repo}/contents/${path}?ref=${BRANCH}`, {
     headers: {
       "Accept": "application/vnd.github+json",
       "Authorization": `Bearer ${token}`,
       "X-GitHub-Api-Version": "2022-11-28",
     },
   });
-  if (!response.ok) throw new Error("Could not read the GitHub file.");
+  if (!response.ok) {
+    const error = new Error("Could not read the GitHub file.");
+    error.status = response.status;
+    throw error;
+  }
   return response.json();
+}
+
+async function loadPrivateEntries(token) {
+  let listing;
+  try {
+    listing = await getGitHubContent("updates", token);
+  } catch (error) {
+    if (error.status === 404) return [];
+    throw error;
+  }
+  const files = Array.isArray(listing) ? listing.filter(file => file.type === "file" && file.name.endsWith(".md")).sort((a, b) => a.name < b.name ? 1 : -1) : [];
+  const entries = [];
+  for (const file of files) {
+    const content = await getGitHubContent(file.path, token);
+    const { meta, body } = parseMarkdown(decodeBase64Utf8(content.content || ""));
+    const markdownWithAssets = await resolvePrivateAssets(body, token);
+    const id = file.name.replace(/\.md$/, "");
+    entries.push({
+      id,
+      path: file.path,
+      author: (meta.author || "amit").toLowerCase(),
+      date: meta.date || id.slice(0, 10),
+      status: (meta.status || "green").toLowerCase(),
+      markdown: body,
+      html: mdToHtml(markdownWithAssets),
+      source: "private",
+    });
+  }
+  return entries;
 }
 
 async function deleteGitHubContent(entry) {
   const token = localStorage.getItem(STORAGE.token);
   if (!token) throw new Error("Setup needed. Save your GitHub token in the writer first.");
   if (!entry.path) throw new Error("This update does not have a repo path.");
-  const existing = await getGitHubContent(entry.path, token);
-  const response = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${entry.path}`, {
+  const target = contentRepo();
+  const existing = await getGitHubContent(entry.path, token, target);
+  const response = await fetch(`https://api.github.com/repos/${target.owner}/${target.repo}/contents/${entry.path}`, {
     method: "DELETE",
     headers: {
       "Accept": "application/vnd.github+json",
@@ -703,6 +900,23 @@ async function deleteEntry(entry) {
 }
 
 async function loadArchive() {
+  if (!LOCAL_ONLY) {
+    const token = localStorage.getItem(STORAGE.token);
+    if (!token) {
+      allEntries = [];
+      render([], `Private updates. Open Write, then Tools > Setup, and use a token with access to ${contentRepoLabel()}.`);
+      return;
+    }
+    try {
+      allEntries = sortEntries(mergeEntries(await loadPrivateEntries(token)));
+      applyArchiveSearch();
+    } catch {
+      allEntries = [];
+      render([], `Could not load private updates from ${contentRepoLabel()}. Check repo access and token setup.`);
+    }
+    return;
+  }
+
   try {
     const response = await fetch("./data/index.json", { cache: "no-store" });
     const data = await response.json();

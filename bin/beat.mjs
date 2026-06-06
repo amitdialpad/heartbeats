@@ -21,6 +21,15 @@ function git(args, opts = {}) {
   return spawnSync("git", args, { encoding: "utf8", ...opts });
 }
 
+function remoteUrl(root) {
+  const r = git(["config", "--get", "remote.origin.url"], { cwd: root });
+  return r.stdout.trim();
+}
+
+function isPublicAppRepo(url) {
+  return /(?:github\.com[:/])amitdialpad\/heartbeats(?:\.git)?$/i.test(url);
+}
+
 function repoRoot() {
   const r = git(["rev-parse", "--show-toplevel"]);
   if (r.status !== 0) {
@@ -44,6 +53,12 @@ function pad(n) {
 // ---- main ------------------------------------------------------------------
 
 const root = repoRoot();
+const origin = remoteUrl(root);
+if (isPublicAppRepo(origin) && process.env.HEARTBEATS_ALLOW_PUBLIC_BEAT !== "1") {
+  console.error("✗ Refusing to post from the public app repo.");
+  console.error("  Use the browser flow with the private updates repo, or run beat inside a private content repo.");
+  process.exit(1);
+}
 const who = author();
 
 const now = new Date();

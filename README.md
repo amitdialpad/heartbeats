@@ -1,8 +1,11 @@
 # Heartbeats
 
-Async written updates between Amit and Josh. Write instead of meet. Inspired by
-Basecamp's "Heartbeats" (Jason Fried): short, considered notes anyone can read on
-their own time. Green is fine, concerns need a nudge, red flags need a decision.
+Private written updates between Amit and Josh. Write once, read when ready, and
+keep the useful context in one durable place instead of scattering it through
+chat or meetings.
+
+Heartbeats is a small practice, not a status dashboard: end the day by writing
+what mattered, what needs attention, and what you think should happen next.
 
 **Live:** https://amitdialpad.github.io/heartbeats/
 
@@ -12,12 +15,40 @@ their own time. Green is fine, concerns need a nudge, red flags need a decision.
 
 Open the live page, write the end-of-day note, hit **Done**.
 
-The page turns the note into an `updates/*.md` beat, commits it to GitHub, and the
-site updates in about a minute. Status is inferred from the text, so you do not
-need to fill out green / concern / red fields.
+The page turns the note into an `updates/*.md` beat in the configured private
+updates repo. Status is inferred from the text, so you do not need to fill out
+green / concern / red fields.
 
 One-time browser setup: save a fine-grained GitHub token in the page setup dialog
-with access to `amitdialpad/heartbeats` and Contents read/write permission.
+with access to the private updates repo and Contents read/write permission.
+
+## Privacy model
+
+The public GitHub Pages repo is only the app shell. It can be open so anyone can
+copy or use the writing tool.
+
+Amit's actual updates should live in a separate private repo, default:
+
+```text
+amitdialpad/heartbeats-private
+```
+
+Give Josh read access to that private repo. Amit needs Contents read/write to
+publish and edit. Josh only needs Contents read to read updates, unless he will
+also edit or publish.
+
+Each person stores their own fine-grained GitHub token in the browser Setup
+dialog. Without private repo access, the archive cannot load the updates.
+
+To make setup easier for someone else, send the app link with the private repo
+pre-filled:
+
+```text
+https://amitdialpad.github.io/heartbeats/?repo=owner/repo
+```
+
+That link opens Setup and fills the private repo field. It does not grant access;
+GitHub repo permissions still decide who can read or write.
 
 ## Terminal fallback
 
@@ -25,35 +56,26 @@ with access to `amitdialpad/heartbeats` and Contents read/write permission.
 beat
 ```
 
-Your editor opens with today's template filled in. Write, save, close. It commits
-and pushes immediately and the site updates in ~1 minute. Close without saving (or
-leave the body as placeholders) and nothing posts.
+The browser flow is the recommended private flow.
 
-No token or terminal? Open a **New beat** issue on the repo. It still converts to a
-post and closes itself.
+The old terminal command writes to the git repo it is run inside. Do not use it
+from the public app repo for private updates unless it is updated to target the
+private updates repo.
 
 ---
 
 ## One-time setup (~10 min)
 
-1. **Create the repo** named `heartbeats` under `amitdialpad`, push these files to `main`.
+1. **Create the app repo** named `heartbeats` under `amitdialpad`, push these files to `main`.
 2. **Turn on Pages:** repo → Settings → Pages → Source = **GitHub Actions**.
-3. **Make `beat` runnable from anywhere.** From the repo folder:
-   ```bash
-   chmod +x bin/beat.mjs
-   npm link            # gives you a global `beat` command
-   ```
-   Then set who you are and your editor in your shell profile (`~/.zshrc`):
-   ```bash
-   export BEAT_AUTHOR=amit
-   export EDITOR="code --wait"   # or: nano / vim / "cursor --wait"
-   ```
-   Reload: `source ~/.zshrc`. Now `beat` works from inside the repo folder.
-   > `npm link` resolves the command globally, but `beat` must be run **inside the
-   > repo** (it commits there). Tip: add `alias beat="cd ~/code/heartbeats && beat"`.
+3. **Create the private updates repo** named `heartbeats-private` under `amitdialpad`.
+   Keep it private and give Josh repo access. The app will create `updates/` and
+   `assets/` content when publishing.
+4. **Josh:** give him access to the private updates repo. He can use the page
+   with his own fine-grained token.
 
-4. **Josh:** give him write access to the repo. He can use the page with his own
-   token, or the **New beat** issue form with no setup.
+For another 1:1 pair, repeat step 3 with their own private repo. The public app
+can stay shared; every pair chooses its own private content repo in Setup.
 
 ---
 
@@ -75,6 +97,7 @@ identical.
 
 ## Format
 
-Each beat is one Markdown file in `updates/` with frontmatter (`author`, `date`,
-`status: green|concern|red`) and Markdown body. The page writes a plain `Note`
-section and infers status from the text. First draft is yours, in your own words.
+Each beat is one Markdown file in the private repo under `updates/` with
+frontmatter (`author`, `date`, `status: green|concern|red`) and Markdown body.
+The page writes a plain `Note` section and infers status from the text. First
+draft is yours, in your own words.

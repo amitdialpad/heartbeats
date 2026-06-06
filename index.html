@@ -106,9 +106,14 @@
     min-height: calc(100vh - 190px);
     background: transparent;
     color: var(--ink);
+    caret-color: var(--ink);
     padding: 0;
     font-size: 32px;
     line-height: 1.58;
+  }
+
+  .editor:empty {
+    caret-color: transparent;
   }
 
   .preview-body {
@@ -200,6 +205,7 @@
     font-size: 12px;
     font-weight: 650;
     line-height: 1;
+    user-select: none;
   }
 
   .editor h4,
@@ -632,7 +638,7 @@
   }
 
   dialog {
-    width: min(520px, calc(100vw - 32px));
+    width: min(640px, calc(100vw - 32px));
     border: 1px solid var(--line);
     border-radius: 8px;
     background: var(--page);
@@ -646,12 +652,97 @@
 
   .settings {
     padding: 24px;
+    max-height: min(760px, calc(100vh - 48px));
+    overflow: auto;
   }
 
   .settings h2 {
-    margin: 0 0 18px;
+    margin: 0;
     font-size: 22px;
     line-height: 1.25;
+  }
+
+  .setup-kicker {
+    margin: 0 0 8px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .setup-intro {
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .setup-intro p {
+    margin: 12px 0 0;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .setup-steps {
+    margin: 16px 0 0;
+    padding-left: 20px;
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .setup-steps li + li {
+    margin-top: 7px;
+  }
+
+  .setup-note {
+    margin-top: 14px;
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .setup-block {
+    margin-top: 18px;
+  }
+
+  .setup-block h3 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    line-height: 1.35;
+  }
+
+  .setup-help {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .setup-help a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  .setup-share {
+    margin-top: 18px;
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .setup-share summary {
+    color: var(--ink);
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .setup-share p {
+    margin: 10px 0 0;
   }
 
   .field {
@@ -864,16 +955,40 @@
 
   <dialog id="settingsDialog">
     <form class="settings" method="dialog">
-      <h2>Setup</h2>
+      <section class="setup-intro" aria-label="Setup instructions">
+        <p class="setup-kicker">Private updates</p>
+        <h2>Keep your updates private</h2>
+        <p>The writing page is public. Your updates are saved somewhere else: a private GitHub repo that only you and your reader can access.</p>
+      </section>
+
+      <section class="setup-block" aria-label="How to set up Heartbeats">
+        <h3>What you need</h3>
+        <ol class="setup-steps">
+          <li>A private GitHub repo for these updates. Example: <code>amitdialpad/heartbeats-private</code>.</li>
+          <li>Your reader added to that repo.</li>
+          <li>A fine-grained GitHub token for that repo.</li>
+        </ol>
+      </section>
+
       <label class="field">
-        <span>Author</span>
+        <span>Your name</span>
         <input id="authorInput" autocomplete="username" value="amit" />
+        <p class="setup-help">Used only in the Markdown filename and metadata.</p>
+      </label>
+      <label class="field">
+        <span>Private repo</span>
+        <input id="contentRepoInput" autocomplete="off" placeholder="amitdialpad/heartbeats-private" />
+        <p class="setup-help">Where Done saves updates. Use <code>owner/repo</code>, like <code>amitdialpad/heartbeats-private</code>.</p>
       </label>
       <label class="field">
         <span>GitHub token</span>
         <input id="tokenInput" autocomplete="off" type="password" placeholder="github_pat_..." />
+        <p class="setup-help">Create a fine-grained token for the private repo. Writer: Contents read/write. Reader: Contents read is enough. <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create token</a>.</p>
       </label>
-      <p class="hint">Fine-grained token, repo access to <code>amitdialpad/heartbeats</code>, Contents read and write.</p>
+      <details class="setup-share">
+        <summary>Sharing this setup</summary>
+        <p>Send your reader this page after they have repo access. Add <code>?repo=owner/repo</code> to the URL to prefill the private repo field. That link does not grant access.</p>
+      </details>
       <div class="settings-actions">
         <button class="plain-button" id="forgetButton" type="button">Forget</button>
         <button class="plain-button" value="cancel">Close</button>
@@ -903,10 +1018,14 @@
 <script>
 const OWNER = "amitdialpad";
 const REPO = "heartbeats";
+const DEFAULT_CONTENT_OWNER = OWNER;
+const DEFAULT_CONTENT_REPO = "heartbeats-private";
 const BRANCH = "main";
 const STORAGE = {
   token: "heartbeats.githubToken",
   author: "heartbeats.author",
+  contentOwner: "heartbeats.contentOwner",
+  contentRepo: "heartbeats.contentRepo",
   draft: "heartbeats.draft",
   draftContext: "heartbeats.draftContext",
   editing: "heartbeats.editing",
@@ -940,6 +1059,7 @@ const selectionToolbar = document.getElementById("selectionToolbar");
 const settingsDialog = document.getElementById("settingsDialog");
 const authorInput = document.getElementById("authorInput");
 const tokenInput = document.getElementById("tokenInput");
+const contentRepoInput = document.getElementById("contentRepoInput");
 const saveSettingsButton = document.getElementById("saveSettingsButton");
 const forgetButton = document.getElementById("forgetButton");
 const linkDialog = document.getElementById("linkDialog");
@@ -995,6 +1115,46 @@ function readJson(key, fallback) {
 
 function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
+}
+
+function parseRepo(value) {
+  const clean = String(value || "").trim().replace(/^https:\/\/github\.com\//, "").replace(/\.git$/, "");
+  const [owner, repo] = clean.split("/").map(part => (part || "").trim()).filter(Boolean);
+  return {
+    owner: owner || DEFAULT_CONTENT_OWNER,
+    repo: repo || DEFAULT_CONTENT_REPO,
+  };
+}
+
+function contentRepo() {
+  return {
+    owner: localStorage.getItem(STORAGE.contentOwner) || DEFAULT_CONTENT_OWNER,
+    repo: localStorage.getItem(STORAGE.contentRepo) || DEFAULT_CONTENT_REPO,
+  };
+}
+
+function contentRepoLabel(repo = contentRepo()) {
+  return `${repo.owner}/${repo.repo}`;
+}
+
+function cleanText(s) {
+  return String(s || "").replace(/[\u200b\u200c\u200d\ufeff]/g, "").replace(/\u00a0/g, " ");
+}
+
+function setupRepoFromUrl() {
+  return new URLSearchParams(location.search).get("repo") || "";
+}
+
+function shouldOpenSetupFromUrl() {
+  const params = new URLSearchParams(location.search);
+  return params.has("repo") || params.has("setup");
+}
+
+function clearSetupUrlParams() {
+  const url = new URL(location.href);
+  url.searchParams.delete("repo");
+  url.searchParams.delete("setup");
+  history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
 }
 
 function draftContext() {
@@ -1187,7 +1347,7 @@ function mdToHtml(md) {
 function editorText() {
   const clone = editor.cloneNode(true);
   clone.querySelectorAll(".image-controls").forEach(node => node.remove());
-  return (clone.innerText || clone.textContent || "").replace(/\u00a0/g, " ").trim();
+  return cleanText(clone.innerText || clone.textContent || "").trim();
 }
 
 function wordCount() {
@@ -1376,6 +1536,23 @@ function persistEditorChange() {
   rememberSelection();
 }
 
+function setCaretAfterFormattedNode(node) {
+  const selection = window.getSelection();
+  if (!selection) return;
+  const section = node.closest?.("h3[data-section]");
+  if (section) {
+    placeCaretAfterSection(section);
+    return;
+  }
+  const range = document.createRange();
+  const boundary = document.createTextNode("\u200b");
+  node.parentNode.insertBefore(boundary, node.nextSibling);
+  range.setStart(boundary, 1);
+  range.collapse(true);
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
 function wrapSelection(tag) {
   const range = selectionInsideEditor() || lastRange;
   if (!range || range.collapsed) return;
@@ -1389,9 +1566,7 @@ function wrapSelection(tag) {
     wrapper.appendChild(liveRange.extractContents());
     liveRange.insertNode(wrapper);
   }
-  liveRange.selectNodeContents(wrapper);
-  selection.removeAllRanges();
-  selection.addRange(liveRange);
+  setCaretAfterFormattedNode(wrapper);
   persistEditorChange();
   updateSelectionToolbar();
 }
@@ -1706,6 +1881,17 @@ function legacySectionFor(node) {
   return aliases[label] || "";
 }
 
+function prepareSectionHeading(node, section = node?.dataset?.section || "") {
+  if (!node || node.nodeType !== Node.ELEMENT_NODE) return;
+  if (section) node.dataset.section = section;
+  node.contentEditable = "false";
+  node.textContent = SECTION_LABELS[node.dataset.section] || node.textContent;
+}
+
+function ensureSectionHeadings(root = editor) {
+  root.querySelectorAll?.("h3[data-section]").forEach(node => prepareSectionHeading(node));
+}
+
 function isEmptyBlock(node) {
   return node?.nodeType === Node.ELEMENT_NODE && !node.querySelector("img") && !(node.textContent || "").trim();
 }
@@ -1724,9 +1910,9 @@ function cleanLoadedDraft() {
 
   for (const node of legacySections) {
     const section = legacySectionFor(node);
-    node.dataset.section = section;
-    node.textContent = SECTION_LABELS[section];
+    prepareSectionHeading(node, section);
   }
+  ensureSectionHeadings();
 }
 
 function currentTopLevelBlock() {
@@ -1811,6 +1997,21 @@ function placeCaretIn(node) {
   rememberSelection();
 }
 
+function paragraphAfter(node) {
+  if (!node || node === editor) return null;
+  let next = node.nextElementSibling;
+  if (!next || isSectionHeading(next)) {
+    next = blankParagraph();
+    node.after(next);
+  }
+  return next;
+}
+
+function placeCaretAfterSection(node) {
+  const next = paragraphAfter(node);
+  if (next) placeCaretIn(next);
+}
+
 function labelCurrentThought(section) {
   const label = SECTION_LABELS[section];
   if (!label) return;
@@ -1824,21 +2025,21 @@ function labelCurrentThought(section) {
   }
 
   if (isSectionHeading(block)) {
-    block.dataset.section = section;
-    block.textContent = label;
+    prepareSectionHeading(block, section);
+    placeCaretAfterSection(block);
     persistDraft();
+    updateMeta();
     updatePreview();
+    hideChromeSoon(900);
     return;
   }
 
   const heading = document.createElement("h3");
-  heading.dataset.section = section;
-  heading.textContent = label;
+  prepareSectionHeading(heading, section);
 
   const previous = block.previousElementSibling;
   if (isSectionHeading(previous)) {
-    previous.dataset.section = section;
-    previous.textContent = label;
+    prepareSectionHeading(previous, section);
   } else {
     block.before(heading);
   }
@@ -1861,8 +2062,7 @@ function labelCurrentThought(section) {
 
 function sectionHeading(section) {
   const h = document.createElement("h3");
-  h.dataset.section = section;
-  h.textContent = SECTION_LABELS[section];
+  prepareSectionHeading(h, section);
   return h;
 }
 
@@ -1943,7 +2143,7 @@ function insertStructureTemplate(type) {
 }
 
 function markdownInline(node, assetMap) {
-  if (node.nodeType === Node.TEXT_NODE) return node.textContent.replace(/\u00a0/g, " ");
+  if (node.nodeType === Node.TEXT_NODE) return cleanText(node.textContent);
   if (node.nodeType !== Node.ELEMENT_NODE) return "";
   const tag = node.tagName.toLowerCase();
   if (tag === "br") return "\n";
@@ -1958,7 +2158,7 @@ function markdownInline(node, assetMap) {
     return `*${Array.from(node.childNodes).map(child => markdownInline(child, assetMap)).join("").trim()}*`;
   }
   if (tag === "code") {
-    return `\`${node.textContent.trim()}\``;
+    return `\`${cleanText(node.textContent).trim()}\``;
   }
   if (tag === "img") {
     const src = assetMap.get(node) || node.getAttribute("src") || "";
@@ -1973,7 +2173,7 @@ function isBlockTag(tag) {
 }
 
 function markdownBlock(node, assetMap) {
-  if (node.nodeType === Node.TEXT_NODE) return node.textContent.trim();
+  if (node.nodeType === Node.TEXT_NODE) return cleanText(node.textContent).trim();
   if (node.nodeType !== Node.ELEMENT_NODE) return "";
   const tag = node.tagName.toLowerCase();
   if (tag === "figure") {
@@ -2204,8 +2404,8 @@ function localDraftEntry(body) {
   };
 }
 
-async function getGitHubContent(path, token) {
-  const response = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}?ref=${BRANCH}`, {
+async function getGitHubContent(path, token, target = contentRepo()) {
+  const response = await fetch(`https://api.github.com/repos/${target.owner}/${target.repo}/contents/${path}?ref=${BRANCH}`, {
     headers: {
       "Accept": "application/vnd.github+json",
       "Authorization": `Bearer ${token}`,
@@ -2219,12 +2419,14 @@ async function getGitHubContent(path, token) {
       const json = await response.json();
       detail = json.message ? ` ${json.message}` : "";
     } catch {}
-    throw new Error(`GitHub could not read the update.${detail}`);
+    const error = new Error(`GitHub could not read the update.${detail}`);
+    error.status = response.status;
+    throw error;
   }
   return response.json();
 }
 
-async function putGitHubContent(path, base64Content, message, token, sha = "") {
+async function putGitHubContent(path, base64Content, message, token, sha = "", target = contentRepo()) {
   const body = {
     message,
     content: base64Content,
@@ -2232,7 +2434,7 @@ async function putGitHubContent(path, base64Content, message, token, sha = "") {
   };
   if (sha) body.sha = sha;
 
-  const response = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`, {
+  const response = await fetch(`https://api.github.com/repos/${target.owner}/${target.repo}/contents/${path}`, {
     method: "PUT",
     headers: {
       "Accept": "application/vnd.github+json",
@@ -2253,7 +2455,7 @@ async function putGitHubContent(path, base64Content, message, token, sha = "") {
   }
 }
 
-async function uploadImages(token, beatId, date) {
+async function uploadImages(token, beatId, date, target = contentRepo()) {
   const images = Array.from(editor.querySelectorAll("img")).filter(img => (img.getAttribute("src") || "").startsWith("data:image/"));
   const assetMap = new Map();
   let index = 0;
@@ -2264,7 +2466,7 @@ async function uploadImages(token, beatId, date) {
     const path = `assets/updates/${beatId}/${filename}`;
     const base64 = src.slice(src.indexOf(",") + 1);
     meta.textContent = images.length === 1 ? "Uploading image" : `Uploading image ${index} of ${images.length}`;
-    await putGitHubContent(path, base64, `asset: ${date} ${filename}`, token);
+    await putGitHubContent(path, base64, `asset: ${date} ${filename}`, token, "", target);
     assetMap.set(img, path);
   }
   return assetMap;
@@ -2306,10 +2508,11 @@ function saveLocalOverride(entry) {
 
 async function saveEditedBeat(edit) {
   const token = localStorage.getItem(STORAGE.token);
+  const target = contentRepo();
   const date = edit.date || localDate();
   const author = edit.author || safeAuthor();
   const beatId = edit.id || `${date}-${author}-${localTime()}`;
-  const assetMap = !LOCAL_ONLY && token ? await uploadImages(token, beatId, date) : new Map();
+  const assetMap = !LOCAL_ONLY && token ? await uploadImages(token, beatId, date, target) : new Map();
   const body = editorToMarkdown(assetMap);
   const status = inferStatus(editorText());
   const entry = editedEntry({ ...edit, id: beatId, date, author }, body, status);
@@ -2327,8 +2530,8 @@ async function saveEditedBeat(edit) {
 
   if (!token) throw new Error("setup");
   const path = edit.path || entry.path;
-  const existing = await getGitHubContent(path, token);
-  await putGitHubContent(path, bytesToBase64(markdown), `edit beat: ${entry.author} ${entry.date}`, token, existing.sha);
+  const existing = await getGitHubContent(path, token, target);
+  await putGitHubContent(path, bytesToBase64(markdown), `edit beat: ${entry.author} ${entry.date}`, token, existing.sha, target);
   saveLocalOverride({ ...entry, path });
   return { path, markdown };
 }
@@ -2339,16 +2542,17 @@ async function publishBeat() {
 
   const token = localStorage.getItem(STORAGE.token);
   if (!token) throw new Error("setup");
+  const target = contentRepo();
 
   const now = new Date();
   const author = safeAuthor();
   const date = localDate(now);
   const beatId = `${date}-${author}-${localTime(now)}`;
   const path = `updates/${beatId}.md`;
-  const assetMap = await uploadImages(token, beatId, date);
+  const assetMap = await uploadImages(token, beatId, date, target);
   const body = editorToMarkdown(assetMap);
   const markdown = buildMarkdown(body, date, inferStatus(editorText()), author);
-  await putGitHubContent(path, bytesToBase64(markdown), `beat: ${author} ${date}`, token);
+  await putGitHubContent(path, bytesToBase64(markdown), `beat: ${author} ${date}`, token, "", target);
 
   return { path, markdown };
 }
@@ -2367,11 +2571,12 @@ function publishLocalBeat() {
   return { path: "local", markdown };
 }
 
-function openSettings() {
+function openSettings(options = {}) {
   authorInput.value = localStorage.getItem(STORAGE.author) || "amit";
   tokenInput.value = localStorage.getItem(STORAGE.token) || "";
+  const repoValue = options.repo || setupRepoFromUrl();
+  contentRepoInput.value = repoValue ? contentRepoLabel(parseRepo(repoValue)) : contentRepoLabel();
   settingsDialog.showModal();
-  setTimeout(() => tokenInput.focus(), 0);
 }
 
 function openImagePicker() {
@@ -2386,6 +2591,10 @@ function toggleCommandMenu() {
 saveSettingsButton.addEventListener("click", () => {
   localStorage.setItem(STORAGE.author, authorInput.value.trim() || "amit");
   if (tokenInput.value.trim()) localStorage.setItem(STORAGE.token, tokenInput.value.trim());
+  const target = parseRepo(contentRepoInput.value);
+  localStorage.setItem(STORAGE.contentOwner, target.owner);
+  localStorage.setItem(STORAGE.contentRepo, target.repo);
+  clearSetupUrlParams();
   settingsDialog.close();
   updateMeta();
   editor.focus();
@@ -2670,6 +2879,7 @@ async function loadInitialContent() {
   if (currentEdit) {
     editor.innerHTML = draft || currentEdit.html || mdToHtml(currentEdit.markdown || "");
     ensureImageControls();
+    ensureSectionHeadings();
     if (!draft) persistDraft();
     return;
   }
@@ -2677,13 +2887,18 @@ async function loadInitialContent() {
   editor.innerHTML = draft;
   cleanLoadedDraft();
   ensureImageControls();
+  ensureSectionHeadings();
 }
 
 loadInitialContent().then(() => {
   setLocalControls();
   setFooterDate();
   updateMeta();
-  setTimeout(() => editor.focus(), 0);
+  if (shouldOpenSetupFromUrl()) {
+    setTimeout(() => openSettings({ repo: setupRepoFromUrl() }), 0);
+  } else {
+    setTimeout(() => editor.focus(), 0);
+  }
 });
 </script>
 </body>
