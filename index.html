@@ -621,6 +621,17 @@
     background: #000;
   }
 
+  body.is-reading .done-button {
+    border-color: var(--line);
+    background: transparent;
+    color: var(--ink);
+  }
+
+  body.is-reading .done-button:hover {
+    background: var(--soft);
+    color: var(--ink);
+  }
+
   .done-button:disabled {
     border-color: var(--line);
     background: var(--soft);
@@ -724,6 +735,17 @@
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 3px;
+  }
+
+  .setup-error {
+    margin: 14px 0 0;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--soft);
+    color: var(--ink);
+    padding: 10px 11px;
+    font-size: 13px;
+    line-height: 1.45;
   }
 
   .setup-share {
@@ -959,6 +981,7 @@
         <p class="setup-kicker">Private updates</p>
         <h2>Keep your updates private</h2>
         <p>The writing page is public. Your updates are saved somewhere else: a private GitHub repo that only you and your reader can access.</p>
+        <p class="setup-error" id="setupError" hidden></p>
       </section>
 
       <section class="setup-block" aria-label="How to set up Heartbeats">
@@ -1060,6 +1083,7 @@ const settingsDialog = document.getElementById("settingsDialog");
 const authorInput = document.getElementById("authorInput");
 const tokenInput = document.getElementById("tokenInput");
 const contentRepoInput = document.getElementById("contentRepoInput");
+const setupError = document.getElementById("setupError");
 const saveSettingsButton = document.getElementById("saveSettingsButton");
 const forgetButton = document.getElementById("forgetButton");
 const linkDialog = document.getElementById("linkDialog");
@@ -1074,6 +1098,7 @@ let currentEdit = null;
 let linkRange = null;
 let editingLink = null;
 let commandReturnFocus = null;
+let slashCommandRange = null;
 
 const SECTION_LABELS = {
   green: "Green",
@@ -1135,6 +1160,23 @@ function contentRepo() {
 
 function contentRepoLabel(repo = contentRepo()) {
   return `${repo.owner}/${repo.repo}`;
+}
+
+function repoAccessMessage(repo = contentRepo()) {
+  return `Private repo ${contentRepoLabel(repo)} was not found, or this token cannot access it. Check the repo name and create a fine-grained token for that exact repo.`;
+}
+
+function githubError(message, response, target) {
+  const error = new Error(message);
+  error.status = response.status;
+  if (response.status === 404) {
+    error.code = "repo-access";
+    error.message = repoAccessMessage(target);
+  } else if (response.status === 403) {
+    error.code = "repo-access";
+    error.message = `This token cannot write to ${contentRepoLabel(target)}. In Setup, use a fine-grained token with Contents read and write for that repo.`;
+  }
+  return error;
 }
 
 function cleanText(s) {
@@ -2299,6 +2341,7 @@ function hideMenus() {
   commandMenu.style.left = "";
   commandButton.setAttribute("aria-expanded", "false");
   commandReturnFocus = null;
+  slashCommandRange = null;
 }
 
 function visibleCommandItems() {
@@ -2327,6 +2370,55 @@ function closeCommandMenu({ restoreFocus = true } = {}) {
   hideMenus();
   if (restoreFocus && target) target.focus();
   commandReturnFocus = null;
+}
+
+function captureSlashCommandRange() {
+  const selection = window.getSelection();
+  if (!selection || !selection.rangeCount) return;
+  const range = selection.getRangeAt(0);
+  if (!editor.contains(range.commonAncestorContainer)) return;
+  const node = range.startContainer;
+  const offset = range.startOffset;
+  if (node.nodeType !== Node.TEXT_NODE || offset < 1 || node.textContent[offset - 1] !== "/") return;
+  const slash = document.createRange();
+  slash.setStart(node, offset - 1);
+  slash.setEnd(node, offset);
+  slashCommandRange = slash;
+}
+
+function consumeSlashCommandTrigger() {
+  if (!slashCommandRange) return;
+  const range = slashCommandRange;
+  slashCommandRange = null;
+  const selection = window.getSelection();
+  range.deleteContents();
+  range.collapse(true);
+  selection.removeAllRanges();
+  selection.addRange(range);
+  rememberSelection();
+}
+
+function handleSlashMenuKey(event) {
+  if (commandMenu.hidden || !slashCommandRange) return false;
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeCommandMenu();
+    return true;
+  }
+  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    event.preventDefault();
+    focusCommandItem(event.key === "ArrowUp" ? visibleCommandItems().length - 1 : 0);
+    return true;
+  }
+  if (event.key === "Enter") {
+    event.preventDefault();
+    visibleCommandItems()[0]?.click();
+    return true;
+  }
+  if (event.key === "Backspace" || (event.key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey)) {
+    closeCommandMenu({ restoreFocus: false });
+  }
+  return false;
 }
 
 function toggleMenu(menu, button) {
@@ -2365,7 +2457,7 @@ function caretRect() {
   return markerRect;
 }
 
-function openCommandMenuAtCaret() {
+function openCommandMenuAtCaret({ focus = true } = {}) {
   const rect = caretRect() || editor.getBoundingClientRect();
   hideMenus();
   commandMenu.hidden = false;
@@ -2376,7 +2468,7 @@ function openCommandMenuAtCaret() {
   commandMenu.style.left = `${Math.max(12, left)}px`;
   commandButton.setAttribute("aria-expanded", "true");
   commandReturnFocus = editor;
-  focusCommandItem(0);
+  if (focus) focusCommandItem(0);
 }
 
 function setLocalControls() {
@@ -2419,9 +2511,7 @@ async function getGitHubContent(path, token, target = contentRepo()) {
       const json = await response.json();
       detail = json.message ? ` ${json.message}` : "";
     } catch {}
-    const error = new Error(`GitHub could not read the update.${detail}`);
-    error.status = response.status;
-    throw error;
+    throw githubError(`GitHub could not read the update.${detail}`, response, target);
   }
   return response.json();
 }
@@ -2451,7 +2541,7 @@ async function putGitHubContent(path, base64Content, message, token, sha = "", t
       const json = await response.json();
       detail = json.message ? ` ${json.message}` : "";
     } catch {}
-    throw new Error(`GitHub rejected the save.${detail}`);
+    throw githubError(`GitHub rejected the save.${detail}`, response, target);
   }
 }
 
@@ -2576,6 +2666,8 @@ function openSettings(options = {}) {
   tokenInput.value = localStorage.getItem(STORAGE.token) || "";
   const repoValue = options.repo || setupRepoFromUrl();
   contentRepoInput.value = repoValue ? contentRepoLabel(parseRepo(repoValue)) : contentRepoLabel();
+  setupError.hidden = !options.message;
+  setupError.textContent = options.message || "";
   settingsDialog.showModal();
 }
 
@@ -2594,6 +2686,8 @@ saveSettingsButton.addEventListener("click", () => {
   const target = parseRepo(contentRepoInput.value);
   localStorage.setItem(STORAGE.contentOwner, target.owner);
   localStorage.setItem(STORAGE.contentRepo, target.repo);
+  setupError.hidden = true;
+  setupError.textContent = "";
   clearSetupUrlParams();
   settingsDialog.close();
   updateMeta();
@@ -2682,9 +2776,12 @@ editor.addEventListener("input", () => {
 });
 
 editor.addEventListener("keydown", (event) => {
+  if (handleSlashMenuKey(event)) return;
   if (event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey) {
-    event.preventDefault();
-    openCommandMenuAtCaret();
+    setTimeout(() => {
+      openCommandMenuAtCaret({ focus: false });
+      captureSlashCommandRange();
+    }, 0);
     return;
   }
   transformMarkdownShortcut(event);
@@ -2796,6 +2893,7 @@ commandMenu.addEventListener("click", async event => {
   const button = event.target.closest("button");
   if (!button) return;
   const command = button.dataset.command;
+  consumeSlashCommandTrigger();
 
   if (button.dataset.sectionCommand) {
     closeCommandMenu({ restoreFocus: false });
@@ -2864,6 +2962,9 @@ doneButton.addEventListener("click", async () => {
     if (error.message === "setup") {
       meta.textContent = "Setup needed";
       openSettings();
+    } else if (error.code === "repo-access") {
+      meta.textContent = "Setup needed";
+      openSettings({ message: error.message });
     } else {
       meta.textContent = error.message || "Could not save.";
     }
